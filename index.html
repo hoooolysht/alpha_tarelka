@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Подбор простых и полезных домашних блюд для семьи с детьми: БЖУ, минералы, список покупок.">
+<title>Семейная тарелка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: одна колонка-«кухонная доска» до 980px; сверху семья и кнопка «удиви», ниже пошаговый подбор; рецепт открывается на месте списка */
+:root{
+  --bg:#F2F5F0; --surface:#FFFFFF; --sunk:#E6ECE4; --line:#D3DCD0;
+  --fg:#1B2620; --muted:#5C6B61;
+  --accent:#2C6E49; --accent-ink:#FFFFFF; --accent-soft:#DCEBDF;
+  --saffron:#D99A1E; --saffron-soft:#F8EBCB;
+  --warn:#B4532A;
+  --f-display:"Unbounded", "Golos Text", system-ui, sans-serif;
+  --f-body:"Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-data:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815; --surface:#1A221D; --sunk:#222C26; --line:#2F3B34;
+  --fg:#E5ECE6; --muted:#9AAA9F;
+  --accent:#6FC08F; --accent-ink:#0F1A13; --accent-soft:#1F3A2A;
+  --saffron:#E8B444; --saffron-soft:#3A2F17; --warn:#E38B63; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815; --surface:#1A221D; --sunk:#222C26; --line:#2F3B34;
+  --fg:#E5ECE6; --muted:#9AAA9F;
+  --accent:#6FC08F; --accent-ink:#0F1A13; --accent-soft:#1F3A2A;
+  --saffron:#E8B444; --saffron-soft:#3A2F17; --warn:#E38B63; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--f-body);margin:0}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:grid;gap:22px}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(1.5rem,4vw,2.1rem)}
+h2{font-size:1.15rem}
+h3{font-size:1rem}
+p{margin:0}
+.muted{color:var(--muted)}
+.label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+a{color:var(--accent)}
+
+header.top{display:flex;flex-wrap:wrap;gap:16px;align-items:end;justify-content:space-between}
+header.top .brand{display:grid;gap:6px;min-width:0}
+header.top .brand p{max-width:60ch}
+
+/* Семья */
+.family{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px}
+.family-row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.counter{display:flex;align-items:center;gap:8px;font-size:.92rem}
+.counter .n{font-family:var(--f-data);min-width:1.4ch;text-align:center;font-weight:600}
+.counter button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--sunk);line-height:1}
+.counter button:hover{border-color:var(--accent)}
+.family .sum{font-size:.85rem;color:var(--muted)}
+
+/* Удиви */
+.surprise{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:var(--saffron-soft);border-radius:var(--r);padding:18px}
+.surprise h2{font-size:1.05rem}
+.surprise .meal-now{font-family:var(--f-data);font-size:.85rem}
+.btn{border:0;border-radius:999px;padding:12px 20px;font-weight:600;background:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.small{padding:8px 14px;font-size:.9rem}
+.meal-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.surprise-result{grid-column:1/-1}
+@media (max-width:560px){.surprise{grid-template-columns:1fr}}
+
+/* Шаги подбора */
+.picker{display:grid;gap:18px}
+.step{display:grid;gap:10px}
+.step-head{display:flex;gap:10px;align-items:baseline}
+.step-no{font-family:var(--f-data);font-weight:600;color:var(--accent);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:.95rem;display:inline-flex;gap:8px;align-items:center}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip .cnt{font-family:var(--f-data);font-size:.75rem;opacity:.7}
+.chip:disabled{opacity:.4;cursor:not-allowed}
+
+/* Карточки рецептов */
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;text-align:left;align-content:start}
+.card:hover{border-color:var(--accent)}
+.card h3{font-family:var(--f-body);font-weight:600;font-size:1.02rem;line-height:1.3}
+.card .meta{font-size:.82rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}
+.macro{display:flex;gap:12px;font-family:var(--f-data);font-size:.8rem;font-variant-numeric:tabular-nums}
+.macro b{font-weight:600}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{font-size:.72rem;padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:var(--fg)}
+.badge.alt{background:var(--saffron-soft)}
+.tag-other{font-size:.72rem;color:var(--warn);font-weight:600}
+
+/* Рецепт */
+.detail{display:grid;gap:22px}
+.detail-head{display:grid;gap:10px}
+.back{justify-self:start}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:22px;align-items:start}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px;min-width:0}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
+th,td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+td.num{font-family:var(--f-data)}
+.pct{font-size:.75rem;color:var(--muted)}
+.bars{display:grid;gap:9px}
+.bar{display:grid;grid-template-columns:7.5em 1fr 3.6em;gap:10px;align-items:center;font-size:.85rem}
+.bar .track{position:relative;height:10px;background:var(--sunk);border-radius:6px;overflow:visible}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:6px}
+.bar .target{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--saffron)}
+.bar .v{font-family:var(--f-data);text-align:right;font-size:.8rem}
+.legend{font-size:.78rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+.kid-switch{display:flex;gap:6px;flex-wrap:wrap}
+
+.shop{display:grid;gap:14px}
+.shop-group{display:grid;gap:4px}
+.shop-item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:5px 0}
+.shop-item input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.shop-item .qty{font-family:var(--f-data);font-size:.85rem;white-space:nowrap}
+.shop-item.done .nm{text-decoration:line-through;color:var(--muted)}
+.sub-btn{border:0;background:none;color:var(--accent);font-size:.78rem;padding:0;text-decoration:underline dotted}
+.sub{font-size:.82rem;color:var(--muted);grid-column:2/-1}
+details.pantry summary{cursor:pointer;font-size:.9rem;color:var(--muted)}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:14px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:2.2em 1fr;gap:10px;counter-increment:s}
+.steps li::before{content:counter(s);font-family:var(--f-data);font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:8px;text-align:center;height:2em;line-height:2em}
+.steps q{quotes:none;font-family:var(--f-data);font-size:.85em;background:var(--saffron-soft);padding:0 4px;border-radius:4px;white-space:nowrap}
+.note{background:var(--saffron-soft);border-radius:10px;padding:10px 12px;font-size:.9rem}
+.copy-area{width:100%;min-height:120px;font:13px/1.4 var(--f-data);background:var(--sunk);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px}
+footer{font-size:.8rem;color:var(--muted);display:grid;gap:6px;max-width:75ch}
+.empty{color:var(--muted);font-size:.95rem}
+@media (prefers-reduced-motion:no-preference){.card,.chip{transition:border-color .15s,background .15s}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Семейная тарелка</h1>
+      <p class="muted">Выберите, из чего готовить. Подберём простое домашнее блюдо, посчитаем БЖУ и минералы для ваших детей и составим список покупок.</p>
+    </div>
+  </header>
+
+  <section class="family" aria-label="Состав семьи">
+    <div class="label">Кто будет есть</div>
+    <div class="family-row" id="family"></div>
+    <div class="sum" id="familySum"></div>
+  </section>
+
+  <main id="main" class="picker">
+    <section class="surprise" aria-labelledby="sTitle">
+      <div>
+        <h2 id="sTitle">Не знаю, что приготовить</h2>
+        <p class="muted" style="font-size:.92rem">Случайное блюдо под текущее время суток: <span class="meal-now" id="mealNow"></span></p>
+        <div class="meal-chips" id="mealChips" role="group" aria-label="Приём пищи"></div>
+      </div>
+      <button class="btn" id="surpriseBtn">Предложить вариант</button>
+      <div class="surprise-result" id="surpriseResult"></div>
+    </section>
+
+    <section class="step" aria-labelledby="st1">
+      <div class="step-head"><span class="step-no">1</span><h2 id="st1">Основа блюда</h2></div>
+      <div class="chips" id="proteinChips" role="group" aria-label="Основной продукт"></div>
+    </section>
+
+    <section class="step" id="step2" hidden aria-labelledby="st2">
+      <div class="step-head"><span class="step-no">2</span><h2 id="st2">Готовим с соусом?</h2></div>
+      <div class="chips" id="sauceYN" role="group"></div>
+    </section>
+
+    <section class="step" id="step3" hidden aria-labelledby="st3">
+      <div class="step-head"><span class="step-no">3</span><h2 id="st3">Какой соус?</h2></div>
+      <div class="chips" id="sauceChips" role="group"></div>
+    </section>
+
+    <section class="step" id="stepRes" hidden aria-labelledby="st4">
+      <div class="step-head"><span class="step-no" id="resNo">4</span><h2 id="st4">Варианты блюд</h2></div>
+      <p class="muted" id="resHint" style="font-size:.9rem"></p>
+      <div class="results" id="results"></div>
+    </section>
+  </main>
+
+  <section id="detail" class="detail" hidden></section>
+
+  <footer>
+    <p>Пищевая ценность рассчитана по составу продуктов (справочные таблицы химического состава, сырой вес, без учёта потерь при готовке). Нормы для детей ориентировочные, по МР 2.3.1.0253-21 «Нормы физиологических потребностей в энергии и пищевых веществах». Для подростков 11–17 лет взято среднее между нормами для мальчиков и девочек.</p>
+    <p>Сайт не заменяет консультацию педиатра или диетолога, особенно при аллергиях и особых диетах.</p>
+  </footer>
+</div>
+
+<script>
+const DB = {"ingredients":{"beef":{"name":"говядина (лопатка, нежирная)","group":"Мясо и птица","kcal":158,"p":20,"f":9,"c":0,"ca":9,"fe":2.7,"zn":4.2,"mg":22,"vc":0,"pcs":null,"pantry":false,"sub":"телятина или нежирная свинина","unit_name":"шт"},"beef_mince":{"name":"фарш говяжий","group":"Мясо и птица","kcal":200,"p":18,"f":14,"c":0,"ca":10,"fe":2.3,"zn":4.2,"mg":18,"vc":0,"pcs":null,"pantry":false,"sub":"фарш индейки или курицы","unit_name":"шт"},"chicken_breast":{"name":"куриное филе","group":"Мясо и птица","kcal":113,"p":23.6,"f":1.9,"c":0.4,"ca":5,"fe":0.5,"zn":0.8,"mg":28,"vc":0,"pcs":null,"pantry":false,"sub":"филе индейки","unit_name":"шт"},"chicken_thigh":{"name":"куриные бёдра без кожи","group":"Мясо и птица","kcal":160,"p":19,"f":9,"c":0,"ca":10,"fe":0.9,"zn":1.8,"mg":23,"vc":0,"pcs":null,"pantry":false,"sub":"куриные голени или филе","unit_name":"шт"},"chicken_liver":{"name":"куриная печень","group":"Мясо и птица","kcal":137,"p":20.4,"f":5.9,"c":0.7,"ca":9,"fe":9,"zn":2.7,"mg":19,"vc":18,"pcs":null,"pantry":false,"sub":"индюшиная или говяжья печень","unit_name":"шт"},"turkey":{"name":"филе индейки","group":"Мясо и птица","kcal":114,"p":22,"f":2,"c":0,"ca":10,"fe":1,"zn":1.5,"mg":27,"vc":0,"pcs":null,"pantry":false,"sub":"куриное филе","unit_name":"шт"},"turkey_mince":{"name":"фарш из индейки","group":"Мясо и птица","kcal":150,"p":19.7,"f":8,"c":0,"ca":20,"fe":1.1,"zn":2.5,"mg":23,"vc":0,"pcs":null,"pantry":false,"sub":"куриный фарш","unit_name":"шт"},"pork_loin":{"name":"свиная вырезка","group":"Мясо и птица","kcal":142,"p":19.4,"f":7.1,"c":0,"ca":7,"fe":1,"zn":2,"mg":27,"vc":0,"pcs":null,"pantry":false,"sub":"индейка или говядина","unit_name":"шт"},"pork_mince":{"name":"фарш свиной нежирный","group":"Мясо и птица","kcal":200,"p":18,"f":14,"c":0,"ca":15,"fe":1,"zn":2.5,"mg":20,"vc":0,"pcs":null,"pantry":false,"sub":"фарш свино-говяжий или индейки","unit_name":"шт"},"cod":{"name":"треска (филе)","group":"Рыба","kcal":69,"p":16,"f":0.6,"c":0,"ca":25,"fe":0.5,"zn":1,"mg":30,"vc":1,"pcs":null,"pantry":false,"sub":"хек или минтай","unit_name":"шт"},"pollock":{"name":"минтай (филе)","group":"Рыба","kcal":72,"p":15.9,"f":0.9,"c":0,"ca":40,"fe":0.8,"zn":1.1,"mg":55,"vc":0,"pcs":null,"pantry":false,"sub":"хек или треска","unit_name":"шт"},"pink_salmon":{"name":"горбуша (филе)","group":"Рыба","kcal":140,"p":20.5,"f":6.5,"c":0,"ca":20,"fe":0.6,"zn":0.7,"mg":30,"vc":0,"pcs":null,"pantry":false,"sub":"кета, форель или скумбрия","unit_name":"шт"},"egg":{"name":"яйца куриные","group":"Молочное и яйца","kcal":157,"p":12.7,"f":11.5,"c":0.7,"ca":55,"fe":1.8,"zn":1.1,"mg":12,"vc":0,"pcs":55,"pantry":false,"sub":"перепелиные яйца (5 шт = 1 куриное)","unit_name":"шт"},"cottage":{"name":"творог 5%","group":"Молочное и яйца","kcal":121,"p":17.2,"f":5,"c":1.8,"ca":164,"fe":0.4,"zn":0.4,"mg":23,"vc":0,"pcs":null,"pantry":false,"sub":"творог 2–9%, зернёный творог","unit_name":"шт"},"milk":{"name":"молоко 2,5%","group":"Молочное и яйца","kcal":52,"p":2.8,"f":2.5,"c":4.7,"ca":120,"fe":0.1,"zn":0.4,"mg":14,"vc":1,"pcs":null,"pantry":false,"sub":"кефир (для теста) или растительное молоко с кальцием","unit_name":"шт"},"sour_cream":{"name":"сметана 15%","group":"Молочное и яйца","kcal":158,"p":2.6,"f":15,"c":3,"ca":88,"fe":0.2,"zn":0.3,"mg":8,"vc":0,"pcs":null,"pantry":false,"sub":"греческий йогурт","unit_name":"шт"},"cream":{"name":"сливки 10%","group":"Молочное и яйца","kcal":118,"p":3,"f":10,"c":4,"ca":90,"fe":0.1,"zn":0.3,"mg":10,"vc":0,"pcs":null,"pantry":false,"sub":"молоко + 1 ст. л. сметаны или плавленый сыр","unit_name":"шт"},"yogurt":{"name":"йогурт натуральный без сахара","group":"Молочное и яйца","kcal":60,"p":5,"f":2,"c":6,"ca":120,"fe":0.1,"zn":0.5,"mg":12,"vc":1,"pcs":null,"pantry":false,"sub":"кефир или сметана 10%","unit_name":"шт"},"cheese":{"name":"сыр твёрдый","group":"Молочное и яйца","kcal":350,"p":25,"f":27,"c":0,"ca":900,"fe":0.6,"zn":3.5,"mg":40,"vc":0,"pcs":null,"pantry":false,"sub":"моцарелла или адыгейский","unit_name":"шт"},"butter":{"name":"масло сливочное 82%","group":"Молочное и яйца","kcal":748,"p":0.5,"f":82.5,"c":0.8,"ca":24,"fe":0.2,"zn":0.1,"mg":2,"vc":0,"pcs":null,"pantry":true,"sub":"растительное масло","unit_name":"шт"},"buckwheat":{"name":"гречка (ядрица)","group":"Крупы и макароны","kcal":313,"p":12.6,"f":3.3,"c":62,"ca":20,"fe":6.7,"zn":2.1,"mg":200,"vc":0,"pcs":null,"pantry":false,"sub":"булгур или киноа","unit_name":"шт"},"rice":{"name":"рис","group":"Крупы и макароны","kcal":344,"p":6.7,"f":0.7,"c":78.9,"ca":8,"fe":0.8,"zn":1.1,"mg":35,"vc":0,"pcs":null,"pantry":false,"sub":"булгур или перловка","unit_name":"шт"},"bulgur":{"name":"булгур","group":"Крупы и макароны","kcal":342,"p":12.3,"f":1.3,"c":63,"ca":35,"fe":2.5,"zn":1.9,"mg":164,"vc":0,"pcs":null,"pantry":false,"sub":"гречка или рис","unit_name":"шт"},"wg_pasta":{"name":"макароны цельнозерновые","group":"Крупы и макароны","kcal":350,"p":13,"f":2.5,"c":65,"ca":40,"fe":3.6,"zn":2.4,"mg":140,"vc":0,"pcs":null,"pantry":false,"sub":"макароны из твёрдых сортов","unit_name":"шт"},"pasta":{"name":"вермишель / лапша","group":"Крупы и макароны","kcal":344,"p":10.4,"f":1.1,"c":71,"ca":20,"fe":1.2,"zn":0.7,"mg":16,"vc":0,"pcs":null,"pantry":false,"sub":"рис или мелкие макароны","unit_name":"шт"},"millet":{"name":"пшено","group":"Крупы и макароны","kcal":342,"p":11.5,"f":3.3,"c":66,"ca":27,"fe":2.7,"zn":1.7,"mg":83,"vc":0,"pcs":null,"pantry":false,"sub":"рис или кукурузная крупа","unit_name":"шт"},"oats":{"name":"овсяные хлопья","group":"Крупы и макароны","kcal":352,"p":12.3,"f":6.2,"c":61,"ca":52,"fe":3.6,"zn":2.7,"mg":129,"vc":0,"pcs":null,"pantry":false,"sub":"гречневые хлопья","unit_name":"шт"},"semolina":{"name":"манная крупа","group":"Крупы и макароны","kcal":333,"p":10.3,"f":1,"c":70.6,"ca":20,"fe":1,"zn":0.6,"mg":18,"vc":0,"pcs":null,"pantry":false,"sub":"мука или овсяные хлопья, смолотые","unit_name":"шт"},"flour":{"name":"мука пшеничная","group":"Бакалея","kcal":334,"p":10.3,"f":1.1,"c":70,"ca":18,"fe":1.2,"zn":0.7,"mg":16,"vc":0,"pcs":null,"pantry":true,"sub":"цельнозерновая или рисовая мука","unit_name":"шт"},"bread":{"name":"хлеб цельнозерновой","group":"Бакалея","kcal":250,"p":9,"f":3,"c":43,"ca":60,"fe":2.5,"zn":1.8,"mg":75,"vc":0,"pcs":null,"pantry":false,"sub":"ржаной хлеб","unit_name":"шт"},"red_lentils":{"name":"чечевица красная","group":"Крупы и макароны","kcal":358,"p":24,"f":1.5,"c":60,"ca":48,"fe":7.4,"zn":3.6,"mg":59,"vc":0,"pcs":null,"pantry":false,"sub":"зелёная чечевица (варить дольше)","unit_name":"шт"},"chickpeas":{"name":"нут сухой","group":"Крупы и макароны","kcal":364,"p":19,"f":6,"c":61,"ca":105,"fe":6.2,"zn":3.4,"mg":115,"vc":4,"pcs":null,"pantry":false,"sub":"консервированный нут (×2,5 по весу)","unit_name":"шт"},"potato":{"name":"картофель","group":"Овощи и зелень","kcal":77,"p":2,"f":0.4,"c":16.3,"ca":10,"fe":0.8,"zn":0.3,"mg":23,"vc":20,"pcs":null,"pantry":false,"sub":"батат","unit_name":"шт"},"carrot":{"name":"морковь","group":"Овощи и зелень","kcal":35,"p":1.3,"f":0.1,"c":6.9,"ca":27,"fe":0.7,"zn":0.4,"mg":38,"vc":5,"pcs":null,"pantry":false,"sub":"тыква","unit_name":"шт"},"onion":{"name":"лук репчатый","group":"Овощи и зелень","kcal":41,"p":1.4,"f":0,"c":8.2,"ca":31,"fe":0.8,"zn":0.2,"mg":14,"vc":10,"pcs":null,"pantry":false,"sub":"лук-порей","unit_name":"шт"},"garlic":{"name":"чеснок","group":"Овощи и зелень","kcal":149,"p":6.5,"f":0.5,"c":30,"ca":180,"fe":1.5,"zn":1,"mg":30,"vc":10,"pcs":null,"pantry":false,"sub":"сушёный чеснок","unit_name":"шт"},"tomato":{"name":"помидоры","group":"Овощи и зелень","kcal":20,"p":0.6,"f":0.2,"c":4.2,"ca":14,"fe":0.3,"zn":0.2,"mg":20,"vc":25,"pcs":null,"pantry":false,"sub":"томаты в собственном соку","unit_name":"шт"},"passata":{"name":"томаты протёртые (пассата)","group":"Бакалея","kcal":24,"p":1.2,"f":0.2,"c":4.5,"ca":30,"fe":1,"zn":0.3,"mg":15,"vc":10,"pcs":null,"pantry":false,"sub":"томаты в собственном соку или свежие помидоры","unit_name":"шт"},"tomato_paste":{"name":"томатная паста","group":"Бакалея","kcal":82,"p":4.3,"f":0.5,"c":19,"ca":36,"fe":3,"zn":0.6,"mg":42,"vc":22,"pcs":null,"pantry":false,"sub":"пассата (×4 по весу)","unit_name":"шт"},"bell_pepper":{"name":"перец болгарский","group":"Овощи и зелень","kcal":26,"p":1.3,"f":0.3,"c":5.3,"ca":7,"fe":0.4,"zn":0.2,"mg":11,"vc":150,"pcs":null,"pantry":false,"sub":"замороженная овощная смесь","unit_name":"шт"},"zucchini":{"name":"кабачок","group":"Овощи и зелень","kcal":24,"p":0.6,"f":0.3,"c":4.6,"ca":15,"fe":0.4,"zn":0.3,"mg":9,"vc":15,"pcs":null,"pantry":false,"sub":"цукини или баклажан","unit_name":"шт"},"broccoli":{"name":"брокколи","group":"Овощи и зелень","kcal":34,"p":2.8,"f":0.4,"c":6.6,"ca":47,"fe":0.7,"zn":0.4,"mg":21,"vc":89,"pcs":null,"pantry":false,"sub":"цветная капуста (свежая или замороженная)","unit_name":"шт"},"cabbage":{"name":"капуста белокочанная","group":"Овощи и зелень","kcal":28,"p":1.8,"f":0.1,"c":4.7,"ca":48,"fe":0.6,"zn":0.4,"mg":16,"vc":45,"pcs":null,"pantry":false,"sub":"пекинская капуста","unit_name":"шт"},"spinach":{"name":"шпинат","group":"Овощи и зелень","kcal":23,"p":2.9,"f":0.4,"c":2,"ca":99,"fe":2.7,"zn":0.5,"mg":79,"vc":28,"pcs":null,"pantry":false,"sub":"замороженный шпинат или брокколи","unit_name":"шт"},"pumpkin":{"name":"тыква","group":"Овощи и зелень","kcal":26,"p":1,"f":0.1,"c":6.5,"ca":21,"fe":0.8,"zn":0.3,"mg":12,"vc":9,"pcs":null,"pantry":false,"sub":"морковь или батат","unit_name":"шт"},"cucumber":{"name":"огурцы","group":"Овощи и зелень","kcal":15,"p":0.8,"f":0.1,"c":2.8,"ca":23,"fe":0.6,"zn":0.2,"mg":14,"vc":10,"pcs":null,"pantry":false,"sub":"любые свежие овощи","unit_name":"шт"},"herbs":{"name":"зелень (укроп, петрушка)","group":"Овощи и зелень","kcal":40,"p":3,"f":0.5,"c":6,"ca":220,"fe":4,"zn":1,"mg":70,"vc":100,"pcs":null,"pantry":false,"sub":"сушёная зелень","unit_name":"шт"},"peas":{"name":"горошек зелёный (замороженный)","group":"Овощи и зелень","kcal":73,"p":5,"f":0.4,"c":13,"ca":25,"fe":1.5,"zn":1.2,"mg":33,"vc":40,"pcs":null,"pantry":false,"sub":"стручковая фасоль","unit_name":"шт"},"mushrooms":{"name":"шампиньоны","group":"Овощи и зелень","kcal":27,"p":4.3,"f":1,"c":0.1,"ca":4,"fe":0.3,"zn":0.3,"mg":15,"vc":7,"pcs":null,"pantry":false,"sub":"вешенки или кабачок","unit_name":"шт"},"apple":{"name":"яблоки","group":"Фрукты, ягоды, орехи","kcal":47,"p":0.4,"f":0.4,"c":9.8,"ca":16,"fe":0.1,"zn":0.1,"mg":9,"vc":10,"pcs":null,"pantry":false,"sub":"груша","unit_name":"шт"},"banana":{"name":"бананы","group":"Фрукты, ягоды, орехи","kcal":96,"p":1.5,"f":0.5,"c":21,"ca":8,"fe":0.4,"zn":0.2,"mg":42,"vc":10,"pcs":null,"pantry":false,"sub":"яблоко или груша","unit_name":"шт"},"berries":{"name":"ягоды (свежие или замороженные)","group":"Фрукты, ягоды, орехи","kcal":45,"p":0.8,"f":0.4,"c":9,"ca":20,"fe":0.6,"zn":0.2,"mg":15,"vc":30,"pcs":null,"pantry":false,"sub":"фрукты по сезону","unit_name":"шт"},"raisins":{"name":"изюм","group":"Фрукты, ягоды, орехи","kcal":279,"p":2.9,"f":0.6,"c":66,"ca":50,"fe":1.9,"zn":0.2,"mg":32,"vc":2,"pcs":null,"pantry":false,"sub":"курага или чернослив","unit_name":"шт"},"avocado":{"name":"авокадо","group":"Фрукты, ягоды, орехи","kcal":160,"p":2,"f":14.7,"c":8.5,"ca":12,"fe":0.6,"zn":0.6,"mg":29,"vc":10,"pcs":null,"pantry":false,"sub":"мягкий творожный сыр","unit_name":"шт"},"walnuts":{"name":"грецкие орехи","group":"Фрукты, ягоды, орехи","kcal":654,"p":15.2,"f":65,"c":7,"ca":98,"fe":2.9,"zn":3.1,"mg":158,"vc":1,"pcs":null,"pantry":false,"sub":"тыквенные семечки","unit_name":"шт"},"lemon":{"name":"лимон","group":"Фрукты, ягоды, орехи","kcal":29,"p":0.9,"f":0.3,"c":9,"ca":26,"fe":0.6,"zn":0.1,"mg":8,"vc":53,"pcs":null,"pantry":false,"sub":"лимонная кислота на кончике ножа","unit_name":"шт"},"oil":{"name":"масло растительное","group":"Бакалея","kcal":899,"p":0,"f":99.9,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":"сливочное или оливковое масло","unit_name":"шт"},"honey":{"name":"мёд","group":"Бакалея","kcal":304,"p":0.3,"f":0,"c":82,"ca":6,"fe":0.4,"zn":0.2,"mg":2,"vc":0,"pcs":null,"pantry":false,"sub":"банан или сухофрукты для сладости","unit_name":"шт"},"salt":{"name":"соль (лучше йодированная)","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"},"pepper":{"name":"перец чёрный молотый","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"},"bay":{"name":"лавровый лист","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"},"paprika":{"name":"паприка сладкая","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"},"cumin":{"name":"зира","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"},"curry":{"name":"карри мягкий","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"},"turmeric":{"name":"куркума","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"},"italian_herbs":{"name":"итальянские травы","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"},"vanilla":{"name":"ванильный сахар / ваниль","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"},"cinnamon":{"name":"корица","group":"Бакалея","kcal":0,"p":0,"f":0,"c":0,"ca":0,"fe":0,"zn":0,"mg":0,"vc":0,"pcs":null,"pantry":true,"sub":null,"unit_name":"шт"}},"recipes":[{"id":"beef-goulash","name":"Гуляш из говядины с гречкой","meals":["lunch","dinner"],"protein":"beef","sauce":"tomato","garnish":"гречка","time":80,"ings":[["beef",600],["onion",120],["carrot",120],["tomato_paste",40],["sour_cream",80],["flour",15],["oil",20],["buckwheat",280],["butter",15],["paprika",0],["bay",0],["salt",0]],"steps":["Говядину {beef} нарежьте кубиками 2–3 см, лук {onion} — полукольцами, морковь {carrot} натрите на крупной тёрке.","Обжарьте мясо на масле {oil} 5–7 минут до румяной корочки. Добавьте лук и морковь, готовьте ещё 5 минут.","Вмешайте томатную пасту {tomato_paste}, муку {flour} и паприку. Залейте горячей водой так, чтобы она покрыла мясо, и тушите под крышкой 60 минут на слабом огне.","За 10 минут до конца добавьте сметану {sour_cream}, лавровый лист и соль. Лавровый лист перед подачей уберите.","Гречку {buckwheat} промойте, залейте двойным объёмом воды, посолите и варите 15–18 минут под крышкой. Заправьте маслом {butter}."],"min_age":1,"note":null,"per":{"kcal":604.2,"p":41.0,"f":27.0,"c":53.1,"ca":67.7,"fe":9.6,"zn":8.1,"mg":195.1,"vc":6.7}},{"id":"beef-meatballs-tomato","name":"Тефтели из говядины в томатном соусе с рисом","meals":["lunch","dinner"],"protein":"beef","sauce":"tomato","garnish":"рис","time":55,"ings":[["beef_mince",500],["rice",260],["onion",100],["egg",55],["passata",400],["carrot",80],["sour_cream",50],["oil",15],["herbs",10],["salt",0]],"steps":["Отварите 60 г риса до полуготовности (10 минут) и остудите. Остальной рис оставьте на гарнир.","Смешайте фарш {beef_mince}, половину мелко нарезанного лука {onion}, яйцо {egg}, полуготовый рис и соль. Сформируйте тефтели размером с грецкий орех.","В глубокой сковороде на масле {oil} 5 минут потушите остальной лук и тёртую морковь {carrot}. Добавьте пассату {passata}, сметану {sour_cream} и 150 мл воды.","Выложите тефтели в соус, накройте крышкой и тушите 25 минут на слабом огне.","Оставшийся рис промойте и сварите (1 часть риса на 2 части воды, 15 минут). Подавайте с тефтелями, посыпав зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":590.9,"p":30.8,"f":25.4,"c":59.8,"ca":84.9,"fe":5.1,"zn":6.6,"mg":75.8,"vc":16.0}},{"id":"beef-stroganoff","name":"Бефстроганов с картофельным пюре","meals":["dinner","lunch"],"protein":"beef","sauce":"sourcream","garnish":"картофельное пюре + огурцы","time":45,"ings":[["beef",600],["onion",120],["sour_cream",150],["flour",15],["butter",40],["oil",15],["potato",800],["milk",150],["cucumber",200],["salt",0],["pepper",0]],"steps":["Говядину {beef} нарежьте поперёк волокон тонкими брусочками (толщиной 1 см), лук {onion} — полукольцами.","Картофель {potato} очистите, залейте кипятком и варите 20 минут. Слейте воду, разомните с горячим молоком {milk} и половиной сливочного масла.","На сильном огне на растительном масле {oil} обжарьте мясо 3–4 минуты, переложите в миску.","На той же сковороде на оставшемся сливочном масле обжарьте лук до мягкости, всыпьте муку {flour}, перемешайте.","Добавьте сметану {sour_cream} и 100 мл воды, верните мясо и тушите 10 минут под крышкой. Посолите. Подавайте с пюре и нарезанными огурцами {cucumber}."],"min_age":1,"note":null,"per":{"kcal":610.6,"p":37.3,"f":33.0,"c":42.1,"ca":135.4,"fe":6.4,"zn":7.4,"mg":99.2,"vc":48.4}},{"id":"beef-veg-stew","name":"Рагу из говядины с овощами","meals":["lunch","dinner"],"protein":"beef","sauce":"none","garnish":"овощи в составе","time":90,"ings":[["beef",550],["potato",500],["carrot",150],["onion",100],["zucchini",300],["bell_pepper",150],["tomato",200],["oil",20],["herbs",15],["bay",0],["salt",0]],"steps":["Говядину {beef} нарежьте кубиками, обжарьте на масле {oil} 5 минут в кастрюле с толстым дном.","Добавьте нарезанный лук {onion} и морковь {carrot}, залейте 300 мл горячей воды и тушите под крышкой 45 минут.","Добавьте кубики картофеля {potato} и тушите ещё 15 минут.","Положите кабачок {zucchini}, перец {bell_pepper} и помидоры {tomato}, нарезанные кубиками, лавровый лист и соль. Тушите 15 минут до мягкости овощей.","Перед подачей посыпьте зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":421.1,"p":32.2,"f":18.4,"c":32.8,"ca":71.9,"fe":5.9,"zn":6.8,"mg":100.2,"vc":113.1}},{"id":"beef-steam-cutlets","name":"Паровые котлеты из говядины с булгуром и салатом","meals":["dinner","lunch"],"protein":"beef","sauce":"none","garnish":"булгур + свежие овощи","time":40,"ings":[["beef_mince",550],["onion",80],["egg",55],["bread",40],["milk",50],["bulgur",260],["butter",15],["cucumber",250],["tomato",200],["salt",0]],"steps":["Хлеб {bread} замочите в молоке {milk} на 5 минут, отожмите.","Смешайте фарш {beef_mince}, мелко натёртый лук {onion}, хлеб, яйцо {egg} и соль. Хорошо вымесите и сформируйте 8–10 котлет.","Готовьте котлеты на пару 25 минут (в пароварке, мультиварке или на решётке над кастрюлей с кипящей водой).","Булгур {bulgur} залейте двойным объёмом кипятка с солью и варите 12 минут, заправьте маслом {butter}.","Нарежьте огурцы {cucumber} и помидоры {tomato} крупными дольками и подайте с котлетами."],"min_age":1,"note":null,"per":{"kcal":606.0,"p":36.8,"f":25.5,"c":51.5,"ca":93.5,"fe":6.0,"zn":7.7,"mg":163.9,"vc":20.9}},{"id":"beef-meatball-soup","name":"Суп с фрикадельками","meals":["lunch"],"protein":"beef","sauce":"none","garnish":"суп","time":45,"ings":[["beef_mince",350],["egg",55],["potato",400],["carrot",100],["onion",80],["bell_pepper",80],["pasta",40],["herbs",15],["bay",0],["salt",0]],"steps":["Вскипятите 2,5 л воды. Смешайте фарш {beef_mince} с яйцом {egg} и солью и скатайте фрикадельки размером с вишню.","Положите в кипящую воду картофель {potato}, нарезанный кубиками, и варите 10 минут.","Добавьте натёртую морковь {carrot}, мелко нарезанные лук {onion} и перец {bell_pepper}, затем опустите фрикадельки по одной.","Через 10 минут всыпьте вермишель {pasta} и положите лавровый лист. Варите ещё 5–7 минут и посолите.","Снимите с огня, добавьте зелень {herbs} и дайте настояться 10 минут."],"min_age":1,"note":null,"per":{"kcal":331.6,"p":21.5,"f":14.4,"c":28.1,"ca":50.9,"fe":3.7,"zn":4.4,"mg":59.1,"vc":57.0}},{"id":"beef-plov","name":"Плов с говядиной","meals":["lunch","dinner"],"protein":"beef","sauce":"none","garnish":"рис","time":80,"ings":[["beef",500],["rice",320],["carrot",250],["onion",150],["garlic",20],["oil",35],["cumin",0],["salt",0]],"steps":["Говядину {beef} нарежьте кубиками, морковь {carrot} — соломкой, лук {onion} — полукольцами.","В казане или толстостенной кастрюле разогрейте масло {oil} и обжарьте мясо до корочки. Добавьте лук, через 5 минут — морковь, и жарьте ещё 5 минут.","Залейте горячей водой на 1 см выше уровня мяса, добавьте зиру и соль и тушите 40 минут под крышкой.","Промытый рис {rice} выложите ровным слоем, долейте кипяток на 1,5 см выше риса и вдавите в рис головку чеснока {garlic}.","Варите на среднем огне без крышки, пока вода не впитается. Затем закройте крышкой и томите 20 минут на минимальном огне. Перемешайте перед подачей."],"min_age":1,"note":null,"per":{"kcal":596.1,"p":32.0,"f":20.6,"c":72.0,"ca":55.1,"fe":4.8,"zn":6.5,"mg":86.0,"vc":7.4}},{"id":"beef-bolognese","name":"Паста болоньезе с цельнозерновыми макаронами","meals":["dinner","lunch"],"protein":"beef","sauce":"tomato","garnish":"цельнозерновые макароны","time":45,"ings":[["beef_mince",450],["wg_pasta",320],["passata",500],["onion",100],["carrot",100],["garlic",10],["cheese",60],["oil",20],["italian_herbs",0],["salt",0]],"steps":["Мелко нарежьте лук {onion}, морковь {carrot} и чеснок {garlic}, обжарьте на масле {oil} 5 минут.","Добавьте фарш {beef_mince}, разбивая комки лопаткой, и жарьте 7–8 минут до смены цвета.","Влейте пассату {passata}, добавьте итальянские травы и соль и тушите под крышкой 20 минут.","Отварите макароны {wg_pasta} по инструкции на упаковке.","Смешайте макароны с соусом и подавайте с тёртым сыром {cheese}."],"min_age":1,"note":null,"per":{"kcal":655.2,"p":36.7,"f":27.1,"c":62.1,"ca":234.8,"fe":7.2,"zn":7.7,"mg":170.8,"vc":16.5}},{"id":"chicken-cream-broccoli","name":"Куриное филе в сливочном соусе с брокколи и рисом","meals":["dinner","lunch"],"protein":"chicken","sauce":"cream","garnish":"рис + брокколи","time":35,"ings":[["chicken_breast",600],["cream",200],["broccoli",400],["rice",260],["cheese",40],["onion",60],["butter",15],["garlic",5],["salt",0]],"steps":["Рис {rice} сварите в подсоленной воде (1 часть риса на 2 части воды, 15 минут).","Филе {chicken_breast} нарежьте кусочками, брокколи {broccoli} разберите на соцветия.","На масле {butter} обжарьте мелко нарезанный лук {onion} и чеснок {garlic} 3 минуты, добавьте курицу и жарьте 5–6 минут.","Положите брокколи, влейте сливки {cream} и 50 мл воды. Тушите под крышкой 8 минут.","Вмешайте тёртый сыр {cheese}, посолите и подавайте с рисом."],"min_age":1,"note":null,"per":{"kcal":557.2,"p":46.9,"f":14.5,"c":62.1,"ca":202.5,"fe":2.2,"zn":2.9,"mg":97.3,"vc":90.6}},{"id":"chicken-bake-potato","name":"Курица, запечённая с картофелем и морковью","meals":["dinner","lunch"],"protein":"chicken","sauce":"none","garnish":"запечённые овощи","time":60,"ings":[["chicken_thigh",700],["potato",800],["carrot",250],["onion",100],["oil",25],["garlic",10],["herbs",15],["paprika",0],["salt",0]],"steps":["Разогрейте духовку до 200 °C.","Картофель {potato} нарежьте дольками, морковь {carrot} — кружками толщиной 1 см, лук {onion} — крупными кусками.","Бёдра {chicken_thigh} натрите солью, паприкой и измельчённым чесноком {garlic}.","Смешайте овощи с маслом {oil} и солью, выложите на противень, сверху положите курицу.","Запекайте 45 минут, пока курица не подрумянится, а картофель не станет мягким. Посыпьте зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":527.5,"p":38.7,"f":22.9,"c":39.9,"ca":74.9,"fe":4.0,"zn":4.1,"mg":116.9,"vc":49.6}},{"id":"chicken-meatballs-sourcream","name":"Куриные тефтели в сметанном соусе с гречкой","meals":["dinner","lunch"],"protein":"chicken","sauce":"sourcream","garnish":"гречка","time":45,"ings":[["chicken_breast",600],["onion",80],["egg",55],["sour_cream",200],["carrot",80],["buckwheat",280],["butter",10],["herbs",10],["salt",0]],"steps":["Филе {chicken_breast} и половину лука {onion} прокрутите в фарш, добавьте яйцо {egg} и соль, сформируйте тефтели.","В сотейнике смешайте сметану {sour_cream}, 200 мл воды, тёртую морковь {carrot}, оставшийся лук и соль.","Доведите соус до кипения, выложите тефтели и тушите под крышкой 25 минут.","Гречку {buckwheat} сварите (на 1 часть крупы 2 части воды, 15–18 минут) и заправьте маслом {butter}.","Подавайте тефтели с гречкой и соусом, посыпав зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":524.1,"p":47.9,"f":16.3,"c":48.8,"ca":90.8,"fe":6.2,"zn":3.1,"mg":199.9,"vc":5.5}},{"id":"chicken-tomato-bulgur","name":"Курица в томатном соусе с перцем и булгуром","meals":["lunch","dinner"],"protein":"chicken","sauce":"tomato","garnish":"булгур","time":45,"ings":[["chicken_thigh",650],["passata",400],["bell_pepper",200],["onion",100],["carrot",100],["bulgur",260],["oil",20],["garlic",5],["paprika",0],["salt",0]],"steps":["Бёдра {chicken_thigh} нарежьте кусками и обжарьте на масле {oil} 6–7 минут.","Добавьте лук {onion}, морковь {carrot} и перец {bell_pepper}, нарезанные соломкой, и чеснок {garlic}. Готовьте 5 минут.","Влейте пассату {passata} и 100 мл воды, добавьте паприку и соль. Тушите под крышкой 20 минут.","Булгур {bulgur} сварите в подсоленной воде (1 часть крупы на 2 части воды, 12 минут).","Подавайте курицу с соусом поверх булгура."],"min_age":1,"note":null,"per":{"kcal":585.1,"p":41.5,"f":20.8,"c":52.2,"ca":89.2,"fe":4.7,"zn":4.7,"mg":177.8,"vc":88.9}},{"id":"chicken-noodle-soup","name":"Куриный суп с лапшой и горошком","meals":["lunch"],"protein":"chicken","sauce":"none","garnish":"суп","time":50,"ings":[["chicken_thigh",400],["pasta",100],["potato",300],["carrot",120],["onion",80],["peas",100],["herbs",15],["bay",0],["salt",0]],"steps":["Залейте курицу {chicken_thigh} 2,5 л холодной воды, доведите до кипения, снимите пену и варите 25 минут.","Достаньте курицу, разберите мясо на кусочки и верните его в бульон.","Добавьте кубики картофеля {potato}, тёртую морковь {carrot} и мелкий лук {onion} и варите 10 минут.","Всыпьте лапшу {pasta} и горошек {peas}, положите лавровый лист и варите 6–7 минут. Посолите.","Добавьте зелень {herbs} и дайте супу настояться 10 минут под крышкой."],"min_age":1,"note":null,"per":{"kcal":342.2,"p":25.1,"f":9.7,"c":37.2,"ca":51.3,"fe":2.7,"zn":2.7,"mg":69.3,"vc":32.2}},{"id":"chicken-mild-curry","name":"Курица в мягком карри с йогуртом и рисом","meals":["dinner","lunch"],"protein":"chicken","sauce":"spicy","garnish":"рис + горошек","time":40,"ings":[["chicken_breast",600],["yogurt",250],["passata",200],["onion",100],["garlic",10],["rice",260],["peas",150],["oil",20],["curry",0],["turmeric",0],["salt",0]],"steps":["Нарежьте курицу {chicken_breast} кусочками и смешайте со 100 г йогурта, щепоткой карри и солью. Оставьте на 15 минут.","Обжарьте мелко нарезанные лук {onion} и чеснок {garlic} на масле {oil} 5 минут, добавьте 1 ч. л. мягкого карри и куркуму.","Выложите курицу и обжаривайте 5 минут, затем влейте пассату {passata} и тушите 10 минут.","Добавьте горошек {peas} и оставшийся йогурт, прогрейте 3 минуты, не доводя до кипения.","Подавайте с отварным рисом {rice}."],"min_age":3,"note":"Карри берите мягкий, без острого перца.","per":{"kcal":528.9,"p":45.9,"f":9.8,"c":65.6,"ca":124.3,"fe":2.6,"zn":2.9,"mg":96.4,"vc":23.4}},{"id":"chicken-zucchini-bake","name":"Запеканка из курицы и кабачков с сыром","meals":["dinner"],"protein":"chicken","sauce":"none","garnish":"овощи в составе","time":50,"ings":[["chicken_breast",500],["zucchini",600],["cheese",80],["egg",110],["sour_cream",100],["tomato",200],["herbs",10],["salt",0]],"steps":["Разогрейте духовку до 190 °C. Кабачки {zucchini} нарежьте тонкими кружками, курицу {chicken_breast} — небольшими кусочками.","Взбейте яйца {egg} со сметаной {sour_cream}, солью и зеленью {herbs}.","В форму выложите слоями кабачки, курицу и кружки помидоров {tomato}, затем повторите слои.","Залейте яично-сметанной смесью и посыпьте тёртым сыром {cheese}.","Запекайте 35–40 минут до золотистой корочки. Перед нарезкой дайте постоять 5 минут."],"min_age":1,"note":null,"per":{"kcal":340.9,"p":39.9,"f":15.2,"c":10.6,"ca":258.4,"fe":2.1,"zn":2.7,"mg":73.5,"vc":37.5}},{"id":"chicken-liver-sourcream","name":"Куриная печень в сметане с гречкой","meals":["lunch","dinner"],"protein":"chicken","sauce":"sourcream","garnish":"гречка","time":35,"ings":[["chicken_liver",500],["onion",150],["carrot",100],["sour_cream",150],["flour",15],["oil",20],["buckwheat",280],["butter",10],["salt",0]],"steps":["Печень {chicken_liver} промойте, удалите плёнки и нарежьте кусочками.","На масле {oil} обжарьте лук {onion} полукольцами и тёртую морковь {carrot} 5 минут.","Обваляйте печень в муке {flour}, добавьте к овощам и обжаривайте 4–5 минут, помешивая.","Влейте сметану {sour_cream} и 100 мл воды, тушите 7–8 минут. Посолите в конце, иначе печень станет жёсткой.","Подавайте с гречкой {buckwheat}, сваренной в подсоленной воде и заправленной маслом {butter}."],"min_age":1,"note":"Печень — отличный источник железа. Детям до 3 лет давайте не чаще 1–2 раз в неделю.","per":{"kcal":549.9,"p":36.5,"f":22.4,"c":52.8,"ca":77.9,"fe":16.5,"zn":5.2,"mg":182.2,"vc":27.5}},{"id":"turkey-cream-pasta","name":"Индейка с грибами в сливочном соусе с макаронами","meals":["dinner","lunch"],"protein":"turkey","sauce":"cream","garnish":"цельнозерновые макароны","time":35,"ings":[["turkey",550],["cream",200],["wg_pasta",300],["mushrooms",200],["onion",60],["cheese",40],["oil",15],["salt",0]],"steps":["Индейку {turkey} нарежьте полосками, грибы {mushrooms} — пластинками, лук {onion} — мелко.","Обжарьте индейку на масле {oil} 5–6 минут, добавьте лук и грибы и готовьте ещё 7 минут.","Влейте сливки {cream}, посолите и тушите 5 минут до загустения.","Отварите макароны {wg_pasta} по инструкции на упаковке и смешайте их с соусом.","Посыпьте тёртым сыром {cheese}."],"min_age":1,"note":null,"per":{"kcal":566.6,"p":46.4,"f":16.6,"c":52.0,"ca":185.4,"fe":4.5,"zn":4.5,"mg":160.7,"vc":5.0}},{"id":"turkey-cutlets-pumpkin","name":"Котлеты из индейки с тыквенно-картофельным пюре","meals":["dinner","lunch"],"protein":"turkey","sauce":"none","garnish":"пюре из тыквы и картофеля","time":45,"ings":[["turkey_mince",550],["onion",70],["egg",55],["oats",30],["pumpkin",600],["potato",300],["milk",100],["butter",20],["salt",0]],"steps":["Смешайте фарш {turkey_mince}, тёртый лук {onion}, яйцо {egg}, хлопья {oats} и соль. Дайте постоять 10 минут.","Сформируйте котлеты и запекайте 25 минут при 190 °C на пергаменте или готовьте на пару.","Тыкву {pumpkin} и картофель {potato} нарежьте кубиками и варите 20 минут до мягкости.","Слейте воду, добавьте горячее молоко {milk} и масло {butter} и разомните в пюре.","Подавайте котлеты с пюре."],"min_age":1,"note":null,"per":{"kcal":408.6,"p":33.7,"f":18.2,"c":29.3,"ca":114.6,"fe":4.0,"zn":4.6,"mg":84.2,"vc":30.5}},{"id":"turkey-meatballs-tomato","name":"Тефтели из индейки в томатном соусе с рисом","meals":["lunch","dinner"],"protein":"turkey","sauce":"tomato","garnish":"рис","time":50,"ings":[["turkey_mince",550],["rice",260],["onion",80],["carrot",80],["passata",400],["egg",55],["herbs",10],["oil",15],["salt",0]],"steps":["Отварите 60 г риса 10 минут и остудите. Остальной рис оставьте на гарнир.","Смешайте фарш {turkey_mince}, полуготовый рис, яйцо {egg}, половину лука {onion} и соль, скатайте тефтели.","На масле {oil} потушите оставшийся лук и тёртую морковь {carrot}, влейте пассату {passata} и 150 мл воды.","Выложите тефтели в соус и тушите под крышкой 25 минут.","Сварите остальной рис и подавайте с тефтелями, посыпав зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":525.4,"p":35.0,"f":17.0,"c":59.1,"ca":87.4,"fe":3.7,"zn":4.7,"mg":83.2,"vc":15.5}},{"id":"turkey-veg-bulgur","name":"Индейка с овощами и булгуром на сковороде","meals":["dinner","lunch"],"protein":"turkey","sauce":"none","garnish":"булгур","time":35,"ings":[["turkey",550],["bulgur",260],["zucchini",250],["bell_pepper",200],["carrot",120],["onion",80],["oil",25],["garlic",5],["herbs",10],["salt",0]],"steps":["Индейку {turkey} нарежьте кубиками и обжарьте на масле {oil} 6 минут.","Добавьте лук {onion}, морковь {carrot}, перец {bell_pepper}, кабачок {zucchini}, нарезанные кубиками, и чеснок {garlic}. Готовьте 7 минут.","Всыпьте булгур {bulgur}, влейте 550 мл кипятка и посолите.","Накройте крышкой и готовьте на слабом огне 15 минут, пока булгур не впитает воду.","Перемешайте и посыпьте зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":484.8,"p":40.1,"f":10.2,"c":50.7,"ca":71.4,"fe":3.9,"zn":3.8,"mg":171.2,"vc":90.5}},{"id":"turkey-pumpkin-soup","name":"Тыквенный суп-пюре с индейкой","meals":["lunch"],"protein":"turkey","sauce":"none","garnish":"суп + гренки","time":45,"ings":[["turkey",350],["pumpkin",700],["potato",250],["carrot",120],["onion",80],["cream",100],["oil",15],["bread",120],["salt",0]],"steps":["Отварите индейку {turkey} в 1,5 л воды 20 минут. Достаньте и нарежьте кубиками.","В бульон положите тыкву {pumpkin}, картофель {potato} и морковь {carrot}, нарезанные кубиками, и лук {onion}, обжаренный на масле {oil}. Варите 20 минут.","Пробейте суп блендером до однородности, влейте сливки {cream} и посолите.","Хлеб {bread} нарежьте кубиками и подсушите в духовке 8 минут при 180 °C.","Подавайте суп с кусочками индейки и гренками."],"min_age":1,"note":null,"per":{"kcal":350.3,"p":26.4,"f":9.4,"c":39.2,"ca":106.5,"fe":3.9,"zn":2.8,"mg":98.2,"vc":31.8}},{"id":"turkey-paprika-potato","name":"Индейка в соусе с паприкой и йогуртом, запечённый картофель","meals":["dinner"],"protein":"turkey","sauce":"spicy","garnish":"запечённый картофель","time":50,"ings":[["turkey",600],["yogurt",200],["potato",800],["onion",80],["garlic",10],["oil",25],["herbs",10],["paprika",0],["salt",0]],"steps":["Картофель {potato} нарежьте дольками, смешайте с половиной масла {oil} и солью и запекайте 35 минут при 200 °C.","Индейку {turkey} нарежьте полосками и обжарьте на оставшемся масле 5 минут.","Добавьте лук {onion}, чеснок {garlic} и 1 ч. л. сладкой паприки и готовьте 3 минуты.","Влейте 100 мл воды и тушите 5 минут, затем снимите с огня и вмешайте йогурт {yogurt}.","Подавайте с картофелем и зеленью {herbs}."],"min_age":3,"note":"Паприка только сладкая, без жгучей.","per":{"kcal":424.1,"p":40.0,"f":11.1,"c":38.1,"ca":111.2,"fe":3.4,"zn":3.2,"mg":97.8,"vc":45.2}},{"id":"pork-cabbage","name":"Свиная вырезка с тушёной капустой и картофелем","meals":["lunch","dinner"],"protein":"pork","sauce":"none","garnish":"тушёная капуста + картофель","time":60,"ings":[["pork_loin",550],["cabbage",800],["carrot",150],["onion",100],["tomato_paste",30],["oil",20],["potato",500],["bay",0],["salt",0]],"steps":["Вырезку {pork_loin} нарежьте кубиками и обжарьте на масле {oil} 6 минут.","Добавьте лук {onion} и тёртую морковь {carrot} и готовьте 5 минут.","Положите нашинкованную капусту {cabbage}, томатную пасту {tomato_paste}, лавровый лист и 150 мл воды. Тушите 25 минут.","Добавьте кубики картофеля {potato} и тушите ещё 20 минут до мягкости.","Посолите и дайте постоять 5 минут."],"min_age":1,"note":null,"per":{"kcal":422.0,"p":33.9,"f":15.5,"c":35.8,"ca":138.7,"fe":4.3,"zn":4.2,"mg":118.8,"vc":121.0}},{"id":"pork-meatballs-sourcream","name":"Свиные тефтели в сметане с пюре","meals":["dinner","lunch"],"protein":"pork","sauce":"sourcream","garnish":"картофельное пюре + огурцы","time":50,"ings":[["pork_mince",450],["onion",80],["egg",55],["sour_cream",200],["potato",800],["milk",150],["butter",20],["cucumber",200],["herbs",10],["salt",0]],"steps":["Смешайте фарш {pork_mince}, тёртый лук {onion}, яйцо {egg} и соль и скатайте тефтели.","Смешайте сметану {sour_cream} со 200 мл воды, доведите до кипения, выложите тефтели и тушите 25 минут под крышкой.","Картофель {potato} сварите и разомните с горячим молоком {milk} и маслом {butter}.","Подавайте тефтели с пюре, огурцами {cucumber} и зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":553.2,"p":29.1,"f":30.8,"c":39.2,"ca":157.8,"fe":3.7,"zn":4.0,"mg":91.0,"vc":49.9}},{"id":"pork-tomato-rice","name":"Свинина с овощами в томатном соусе с рисом","meals":["lunch","dinner"],"protein":"pork","sauce":"tomato","garnish":"рис","time":45,"ings":[["pork_loin",550],["passata",400],["bell_pepper",200],["zucchini",200],["onion",80],["rice",260],["oil",20],["garlic",5],["salt",0]],"steps":["Нарежьте свинину {pork_loin} полосками и обжарьте на масле {oil} 6 минут.","Добавьте лук {onion}, перец {bell_pepper}, кабачок {zucchini} и чеснок {garlic} и готовьте 5 минут.","Влейте пассату {passata}, посолите и тушите 20 минут под крышкой.","Рис {rice} сварите в подсоленной воде.","Подавайте свинину с соусом поверх риса."],"min_age":1,"note":null,"per":{"kcal":522.9,"p":33.5,"f":15.7,"c":62.8,"ca":64.3,"fe":3.5,"zn":4.1,"mg":88.0,"vc":94.6}},{"id":"pork-creamy-mushroom","name":"Свинина в сливочно-грибном соусе с отварным картофелем","meals":["dinner"],"protein":"pork","sauce":"cream","garnish":"отварной картофель","time":45,"ings":[["pork_loin",550],["mushrooms",300],["cream",200],["onion",80],["potato",800],["oil",20],["herbs",10],["salt",0]],"steps":["Картофель {potato} отварите целиком в подсоленной воде 20–25 минут.","Свинину {pork_loin} нарежьте медальонами толщиной 1,5 см и обжарьте на масле {oil} по 3 минуты с каждой стороны.","Рядом обжарьте лук {onion} и грибы {mushrooms} 7 минут.","Влейте сливки {cream}, посолите и тушите всё вместе 10 минут.","Подавайте с картофелем и зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":482.6,"p":35.8,"f":21.3,"c":36.5,"ca":89.3,"fe":3.5,"zn":3.8,"mg":103.9,"vc":49.8}},{"id":"cod-cream-spinach","name":"Треска в сливочном соусе со шпинатом и рисом","meals":["dinner","lunch"],"protein":"fish","sauce":"cream","garnish":"рис","time":35,"ings":[["cod",650],["cream",200],["spinach",200],["rice",260],["onion",50],["cheese",40],["butter",15],["lemon",30],["salt",0]],"steps":["Рис {rice} сварите в подсоленной воде.","На масле {butter} обжарьте мелкий лук {onion} 3 минуты, добавьте шпинат {spinach} и прогрейте 2 минуты.","Влейте сливки {cream}, добавьте тёртый сыр {cheese} и соль.","Выложите кусочки трески {cod}, сбрызнутые соком лимона {lemon}, и тушите под крышкой 10–12 минут.","Подавайте с рисом. Перед подачей проверьте, нет ли косточек."],"min_age":1,"note":null,"per":{"kcal":476.6,"p":36.1,"f":12.4,"c":56.0,"ca":237.0,"fe":2.9,"zn":3.1,"mg":122.4,"vc":20.9}},{"id":"pollock-cutlets-mash","name":"Рыбные котлеты из минтая с пюре","meals":["dinner","lunch"],"protein":"fish","sauce":"none","garnish":"картофельное пюре + огурцы","time":45,"ings":[["pollock",650],["onion",80],["egg",55],["bread",50],["milk",200],["potato",800],["butter",25],["cucumber",200],["salt",0]],"steps":["Хлеб {bread} замочите в 50 мл молока.","Филе минтая {pollock} и лук {onion} прокрутите в фарш, добавьте отжатый хлеб, яйцо {egg} и соль и сформируйте котлеты.","Запекайте котлеты 20–25 минут при 190 °C на пергаменте.","Картофель {potato} сварите и разомните с остальным горячим молоком и маслом {butter}.","Подавайте с пюре и огурцами {cucumber}."],"min_age":1,"note":null,"per":{"kcal":412.3,"p":34.8,"f":10.7,"c":43.5,"ca":179.3,"fe":4.0,"zn":3.1,"mg":163.3,"vc":47.5}},{"id":"salmon-veg-bake","name":"Горбуша, запечённая с картофелем и брокколи","meals":["dinner"],"protein":"fish","sauce":"none","garnish":"запечённые овощи","time":45,"ings":[["pink_salmon",600],["potato",600],["broccoli",300],["carrot",150],["lemon",30],["oil",20],["herbs",15],["salt",0]],"steps":["Картофель {potato} и морковь {carrot} нарежьте дольками, смешайте с маслом {oil} и солью и запекайте 20 минут при 200 °C.","Горбушу {pink_salmon} нарежьте порционными кусками, посолите и сбрызните соком лимона {lemon}.","Добавьте на противень рыбу и соцветия брокколи {broccoli}.","Запекайте ещё 15–18 минут.","Посыпьте зеленью {herbs}. Детям уберите косточки."],"min_age":1,"note":null,"per":{"kcal":412.8,"p":36.5,"f":15.7,"c":32.9,"ca":100.6,"fe":3.1,"zn":2.0,"mg":112.7,"vc":106.3}},{"id":"fish-meatballs-tomato","name":"Рыбные тефтели в томатном соусе с рисом","meals":["lunch","dinner"],"protein":"fish","sauce":"tomato","garnish":"рис","time":50,"ings":[["pollock",600],["rice",260],["onion",80],["egg",55],["passata",400],["carrot",100],["herbs",10],["oil",15],["salt",0]],"steps":["Отварите 60 г риса 10 минут и остудите. Остальной рис оставьте на гарнир.","Прокрутите минтай {pollock} в фарш и смешайте с рисом, яйцом {egg}, половиной лука {onion} и солью. Скатайте тефтели.","Потушите оставшийся лук и морковь {carrot} на масле {oil}, влейте пассату {passata} и 100 мл воды.","Выложите тефтели в соус и тушите 20 минут под крышкой.","Подавайте с отварным рисом и зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":428.8,"p":31.8,"f":7.4,"c":59.4,"ca":121.2,"fe":3.4,"zn":3.0,"mg":135.9,"vc":15.8}},{"id":"fish-soup","name":"Рыбный суп с пшеном","meals":["lunch"],"protein":"fish","sauce":"none","garnish":"суп","time":35,"ings":[["pink_salmon",400],["potato",400],["carrot",100],["onion",80],["millet",40],["herbs",20],["bay",0],["salt",0]],"steps":["Вскипятите 2 л воды. Положите кубики картофеля {potato} и промытое пшено {millet} и варите 10 минут.","Добавьте морковь {carrot} кружками и целую луковицу {onion}, варите 5 минут.","Опустите кусочки горбуши {pink_salmon} и лавровый лист и варите 10 минут на слабом огне.","Выньте лук и лавровый лист и посолите.","Добавьте рубленую зелень {herbs} и дайте настояться 5 минут."],"min_age":1,"note":null,"per":{"kcal":270.1,"p":24.4,"f":7.3,"c":26.6,"ca":56.7,"fe":2.2,"zn":1.4,"mg":77.1,"vc":28.2}},{"id":"pollock-sourcream-buckwheat","name":"Минтай, тушёный в сметане с овощами, и гречка","meals":["dinner","lunch"],"protein":"fish","sauce":"sourcream","garnish":"гречка","time":40,"ings":[["pollock",650],["sour_cream",200],["onion",100],["carrot",120],["buckwheat",280],["butter",10],["herbs",10],["salt",0]],"steps":["Гречку {buckwheat} сварите и заправьте маслом {butter}.","В сотейник положите лук {onion} полукольцами и тёртую морковь {carrot}, сверху — куски минтая {pollock}, и посолите.","Смешайте сметану {sour_cream} со 150 мл воды и залейте рыбу.","Тушите под крышкой 20 минут на слабом огне.","Подавайте с гречкой и зеленью {herbs}."],"min_age":1,"note":null,"per":{"kcal":455.6,"p":36.8,"f":13.4,"c":49.2,"ca":144.9,"fe":6.6,"zn":3.6,"mg":250.1,"vc":6.5}},{"id":"salmon-herb-bulgur","name":"Горбуша в травяном йогуртовом соусе с булгуром","meals":["dinner","lunch"],"protein":"fish","sauce":"spicy","garnish":"булгур + огурцы","time":30,"ings":[["pink_salmon",600],["yogurt",200],["herbs",25],["lemon",40],["garlic",5],["bulgur",260],["cucumber",250],["oil",15],["salt",0]],"steps":["Булгур {bulgur} сварите в подсоленной воде 12 минут.","Горбушу {pink_salmon} посолите и запеките 15–18 минут при 200 °C, смазав маслом {oil}.","Для соуса смешайте йогурт {yogurt}, мелко нарубленную зелень {herbs}, тёртый чеснок {garlic}, сок лимона {lemon} и соль.","Огурцы {cucumber} нарежьте кубиками и вмешайте половину в соус, остальные подайте отдельно.","Подавайте рыбу с булгуром, полив соусом."],"min_age":1,"note":null,"per":{"kcal":512.6,"p":42.1,"f":15.5,"c":47.4,"ca":145.7,"fe":3.3,"zn":2.7,"mg":171.9,"vc":18.4}},{"id":"fish-broccoli-casserole","name":"Рыбная запеканка с брокколи и картофелем","meals":["dinner"],"protein":"fish","sauce":"none","garnish":"овощи в составе","time":50,"ings":[["cod",500],["broccoli",400],["potato",400],["egg",110],["milk",200],["cheese",60],["butter",10],["salt",0]],"steps":["Картофель {potato} сварите до полуготовности (10 минут) и нарежьте кружками. Брокколи {broccoli} бланшируйте 3 минуты.","Смажьте форму маслом {butter} и выложите картофель, кусочки трески {cod} и брокколи.","Взбейте яйца {egg} с молоком {milk} и солью и залейте этой смесью форму.","Посыпьте тёртым сыром {cheese}.","Запекайте 30 минут при 190 °C."],"min_age":1,"note":null,"per":{"kcal":337.6,"p":33.5,"f":12.1,"c":25.5,"ca":299.0,"fe":2.8,"zn":3.0,"mg":97.8,"vc":110.8}},{"id":"omelet-veg","name":"Омлет с перцем и помидорами","meals":["breakfast"],"protein":"eggs","sauce":"none","garnish":"цельнозерновой хлеб","time":20,"ings":[["egg",440],["milk",160],["bell_pepper",150],["tomato",200],["cheese",40],["butter",15],["bread",160],["herbs",10],["salt",0]],"steps":["Нарежьте перец {bell_pepper} и помидоры {tomato} мелкими кубиками.","Взбейте яйца {egg} с молоком {milk} и щепоткой соли.","На масле {butter} обжарьте перец 3 минуты, добавьте помидоры.","Залейте яичной смесью, посыпьте сыром {cheese}, накройте крышкой и готовьте на слабом огне 8–10 минут.","Посыпьте зеленью {herbs} и подавайте с хлебом {bread}."],"min_age":1,"note":null,"per":{"kcal":377.3,"p":22.1,"f":20.9,"c":24.1,"ca":238.5,"fe":3.5,"zn":2.6,"mg":68.8,"vc":71.7}},{"id":"frittata-spinach","name":"Фриттата со шпинатом и картофелем","meals":["breakfast","dinner"],"protein":"eggs","sauce":"none","garnish":"картофель в составе","time":30,"ings":[["egg",440],["spinach",200],["potato",300],["cheese",60],["onion",50],["oil",15],["milk",100],["salt",0]],"steps":["Картофель {potato} нарежьте тонкими кружками и обжарьте с луком {onion} на масле {oil} под крышкой 10 минут.","Добавьте шпинат {spinach} и прогрейте 2 минуты.","Взбейте яйца {egg} с молоком {milk}, солью и половиной тёртого сыра {cheese}.","Залейте овощи, посыпьте остальным сыром и запекайте 12–15 минут при 180 °C (сковорода должна подходить для духовки).","Нарежьте на сегменты, как пиццу."],"min_age":1,"note":null,"per":{"kcal":346.3,"p":21.5,"f":21.6,"c":16.2,"ca":286.4,"fe":4.1,"zn":2.3,"mg":81.2,"vc":30.5}},{"id":"eggs-avocado-toast","name":"Яйца с тостами, авокадо и овощами","meals":["breakfast"],"protein":"eggs","sauce":"none","garnish":"цельнозерновой хлеб","time":15,"ings":[["egg",440],["bread",240],["avocado",200],["tomato",200],["cucumber",150],["lemon",10],["salt",0]],"steps":["Сварите яйца {egg}: 7 минут после закипания для мягкого желтка, 9–10 минут для крутого.","Подсушите хлеб {bread} в тостере или на сухой сковороде.","Разомните авокадо {avocado} вилкой с соком лимона {lemon} и щепоткой соли.","Намажьте авокадо на тосты, сверху положите половинки яиц.","Подавайте с нарезанными помидорами {tomato} и огурцами {cucumber}."],"min_age":1,"note":null,"per":{"kcal":419.1,"p":21.0,"f":21.9,"c":34.2,"ca":118.8,"fe":4.2,"zn":2.8,"mg":88.2,"vc":22.6}},{"id":"shakshuka","name":"Мягкая шакшука (яйца в томатном соусе)","meals":["breakfast","dinner"],"protein":"eggs","sauce":"tomato","garnish":"цельнозерновой хлеб","time":25,"ings":[["egg",440],["passata",500],["bell_pepper",200],["onion",80],["garlic",5],["oil",20],["bread",200],["herbs",10],["paprika",0],["salt",0]],"steps":["На масле {oil} обжарьте лук {onion}, перец {bell_pepper} и чеснок {garlic} 6 минут.","Влейте пассату {passata}, добавьте сладкую паприку и соль и тушите 8 минут.","Сделайте ложкой углубления и разбейте в них яйца {egg}.","Накройте крышкой и готовьте 6–8 минут. Для детей готовьте до полностью застывшего желтка.","Посыпьте зеленью {herbs} и подавайте с хлебом {bread}."],"min_age":1,"note":null,"per":{"kcal":396.7,"p":21.1,"f":19.6,"c":32.7,"ca":145.4,"fe":5.0,"zn":2.7,"mg":79.9,"vc":92.1}},{"id":"zucchini-fritters","name":"Оладьи из кабачков со сметаной","meals":["breakfast","dinner"],"protein":"eggs","sauce":"sourcream","garnish":"сметана","time":35,"ings":[["zucchini",700],["egg",110],["flour",100],["cheese",50],["herbs",15],["oil",30],["sour_cream",150],["salt",0]],"steps":["Кабачки {zucchini} натрите на крупной тёрке, посолите, через 10 минут хорошо отожмите.","Добавьте яйца {egg}, муку {flour}, тёртый сыр {cheese} и зелень {herbs} и перемешайте.","Выкладывайте тесто ложкой на сковороду, слегка смазанную маслом {oil}.","Жарьте по 3 минуты с каждой стороны на среднем огне.","Подавайте со сметаной {sour_cream}."],"min_age":1,"note":null,"per":{"kcal":340.6,"p":11.3,"f":20.5,"c":27.1,"ca":199.6,"fe":1.8,"zn":1.6,"mg":33.7,"vc":30.0}},{"id":"syrniki-baked","name":"Сырники в духовке с ягодами и сметаной","meals":["breakfast"],"protein":"dairy","sauce":"sourcream","garnish":"ягоды","time":35,"ings":[["cottage",600],["egg",110],["flour",80],["honey",30],["sour_cream",150],["berries",200],["oil",10],["vanilla",0]],"steps":["Разомните творог {cottage} вилкой, добавьте яйца {egg}, мёд {honey}, ваниль и 50 г муки {flour}.","Сформируйте сырники и обваляйте их в оставшейся муке.","Выложите на противень с пергаментом, смазанным маслом {oil}.","Запекайте 20–25 минут при 190 °C, перевернув через 12 минут.","Подавайте со сметаной {sour_cream} и ягодами {berries}."],"min_age":1,"note":null,"per":{"kcal":418.5,"p":32.8,"f":19.2,"c":28.7,"ca":308.2,"fe":1.7,"zn":1.3,"mg":51.6,"vc":15.0}},{"id":"cottage-casserole","name":"Творожная запеканка с изюмом","meals":["breakfast"],"protein":"dairy","sauce":"none","garnish":"сметана или ягоды","time":55,"ings":[["cottage",700],["egg",165],["semolina",60],["sour_cream",100],["honey",40],["raisins",60],["butter",10],["vanilla",0]],"steps":["Смешайте творог {cottage}, яйца {egg}, манку {semolina}, сметану {sour_cream}, мёд {honey} и ваниль. Оставьте на 15 минут, чтобы манка набухла.","Добавьте промытый изюм {raisins}.","Смажьте форму маслом {butter} и выложите массу.","Запекайте 40 минут при 180 °C.","Дайте остыть 10 минут, затем нарежьте."],"min_age":1,"note":null,"per":{"kcal":456.9,"p":38.0,"f":19.5,"c":32.9,"ca":343.4,"fe":2.0,"zn":1.4,"mg":55.0,"vc":0.3}},{"id":"lazy-vareniki","name":"Ленивые вареники с ягодами","meals":["breakfast"],"protein":"dairy","sauce":"sourcream","garnish":"сметана + ягоды","time":25,"ings":[["cottage",600],["egg",55],["flour",130],["butter",20],["sour_cream",100],["berries",150],["salt",0]],"steps":["Смешайте творог {cottage}, яйцо {egg}, щепотку соли и муку {flour} до мягкого теста.","Раскатайте колбаски толщиной 2 см и нарежьте кусочками по 1,5 см.","Опускайте вареники в кипящую подсоленную воду и варите 2–3 минуты после всплытия.","Достаньте шумовкой и смешайте с маслом {butter}.","Подавайте со сметаной {sour_cream} и ягодами {berries}."],"min_age":1,"note":null,"per":{"kcal":405.4,"p":31.9,"f":17.5,"c":29.7,"ca":290.1,"fe":1.5,"zn":1.1,"mg":49.1,"vc":11.2}},{"id":"oatmeal-banana","name":"Овсянка на молоке с бананом и орехами","meals":["breakfast"],"protein":"dairy","sauce":"none","garnish":"фрукты","time":15,"ings":[["oats",200],["milk",800],["banana",240],["walnuts",40],["honey",20],["butter",10],["cinnamon",0]],"steps":["Доведите молоко {milk} до кипения, всыпьте хлопья {oats}.","Варите 5–7 минут, помешивая.","Добавьте масло {butter} и щепотку корицы.","Разложите по тарелкам, сверху выложите кружки банана {banana} и измельчённые орехи {walnuts}, полейте мёдом {honey}."],"min_age":1,"note":"Детям до 3–4 лет орехи давайте только молотыми.","per":{"kcal":436.9,"p":14.2,"f":17.0,"c":57.3,"ca":281.5,"fe":2.6,"zn":2.6,"mg":133.7,"vc":8.1}},{"id":"buckwheat-milk","name":"Гречневая каша с молоком и печёным яблоком","meals":["breakfast"],"protein":"dairy","sauce":"none","garnish":"яблоко","time":25,"ings":[["buckwheat",200],["milk",800],["butter",20],["honey",20],["apple",200],["cinnamon",0]],"steps":["Гречку {buckwheat} промойте, залейте 400 мл воды и варите 15 минут.","Яблоки {apple} нарежьте дольками, посыпьте корицей и запеките 10 минут при 190 °C или потушите на сковороде с ложкой воды.","Влейте в гречку горячее молоко {milk} и прогрейте 3 минуты.","Добавьте масло {butter} и мёд {honey}.","Подавайте с яблоками."],"min_age":1,"note":null,"per":{"kcal":336.6,"p":12.1,"f":11.0,"c":49.4,"ca":259.5,"fe":3.6,"zn":1.9,"mg":132.7,"vc":7.0}},{"id":"millet-pumpkin","name":"Пшённая каша с тыквой","meals":["breakfast"],"protein":"dairy","sauce":"none","garnish":"тыква в составе","time":40,"ings":[["millet",200],["pumpkin",400],["milk",800],["butter",20],["honey",20],["raisins",40],["salt",0]],"steps":["Пшено {millet} промойте горячей водой 3 раза, чтобы убрать горечь.","Тыкву {pumpkin} нарежьте мелким кубиком и варите в 200 мл воды 10 минут.","Добавьте пшено и молоко {milk} и варите на слабом огне 25 минут, помешивая.","В конце добавьте изюм {raisins}, масло {butter}, мёд {honey} и щепотку соли.","Дайте постоять под крышкой 10 минут."],"min_age":1,"note":null,"per":{"kcal":381.5,"p":12.7,"f":10.9,"c":59.6,"ca":281.0,"fe":2.6,"zn":2.0,"mg":84.9,"vc":11.2}},{"id":"cottage-berries-yogurt","name":"Творог с ягодами, йогуртом и хрустящей овсянкой","meals":["breakfast"],"protein":"dairy","sauce":"none","garnish":"ягоды","time":10,"ings":[["cottage",500],["yogurt",300],["berries",300],["oats",80],["honey",30],["walnuts",30]],"steps":["Подсушите хлопья {oats} на сухой сковороде 3–4 минуты до золотистого цвета.","Смешайте творог {cottage} с йогуртом {yogurt} и мёдом {honey}.","Выложите слоями в стаканы: творог, ягоды {berries}, хлопья.","Сверху посыпьте измельчёнными орехами {walnuts}."],"min_age":1,"note":"Детям до 3–4 лет орехи давайте только молотыми.","per":{"kcal":372.2,"p":29.5,"f":14.2,"c":32.4,"ca":328.2,"fe":2.0,"zn":1.8,"mg":86.8,"vc":23.3}},{"id":"lentil-soup","name":"Суп-пюре из красной чечевицы","meals":["lunch"],"protein":"legumes","sauce":"none","garnish":"суп + хлеб","time":35,"ings":[["red_lentils",250],["potato",300],["carrot",150],["onion",100],["tomato_paste",30],["oil",20],["lemon",20],["bread",160],["turmeric",0],["cumin",0],["salt",0]],"steps":["Обжарьте лук {onion} и тёртую морковь {carrot} на масле {oil} 5 минут, добавьте томатную пасту {tomato_paste}, куркуму и зиру.","Добавьте промытую чечевицу {red_lentils}, кубики картофеля {potato} и 1,8 л воды.","Варите 20–25 минут, пока чечевица не разварится.","Пробейте суп блендером, посолите и добавьте сок лимона {lemon}.","Подавайте с хлебом {bread}."],"min_age":1,"note":null,"per":{"kcal":457.4,"p":21.3,"f":7.5,"c":73.4,"ca":83.4,"fe":6.9,"zn":3.4,"mg":105.4,"vc":23.7}},{"id":"chickpea-tomato-stew","name":"Нут с овощами в томатном соусе и рис","meals":["dinner","lunch"],"protein":"legumes","sauce":"tomato","garnish":"рис","time":40,"ings":[["chickpeas",300],["passata",500],["zucchini",250],["bell_pepper",150],["onion",100],["garlic",10],["spinach",100],["oil",25],["rice",200],["paprika",0],["salt",0]],"steps":["Замочите нут {chickpeas} на ночь, затем варите 60–80 минут до мягкости. Можно взять консервированный нут, тогда этот шаг не нужен.","На масле {oil} обжарьте лук {onion}, чеснок {garlic}, перец {bell_pepper} и кабачок {zucchini} 7 минут.","Добавьте нут, пассату {passata}, паприку и соль и тушите 15 минут.","Вмешайте шпинат {spinach} и прогрейте 2 минуты.","Подавайте с отварным рисом {rice}."],"min_age":1,"note":"Время указано для консервированного нута.","per":{"kcal":575.7,"p":21.2,"f":11.8,"c":99.0,"ca":169.2,"fe":7.6,"zn":3.9,"mg":156.2,"vc":90.9}},{"id":"lentil-patties","name":"Котлеты из чечевицы с йогуртовым соусом","meals":["dinner"],"protein":"legumes","sauce":"none","garnish":"огурцы + йогурт","time":45,"ings":[["red_lentils",250],["carrot",150],["onion",80],["egg",55],["oats",50],["oil",30],["yogurt",200],["cucumber",200],["herbs",10],["salt",0]],"steps":["Чечевицу {red_lentils} варите в 500 мл воды 15 минут, пока вода не впитается, затем остудите.","Обжарьте тёртую морковь {carrot} и лук {onion} на половине масла {oil} 5 минут.","Смешайте чечевицу, овощи, яйцо {egg}, хлопья {oats} и соль и сформируйте котлеты.","Обжарьте их на оставшемся масле по 3–4 минуты с каждой стороны или запеките 20 минут при 200 °C.","Для соуса смешайте йогурт {yogurt}, тёртый огурец {cucumber} и зелень {herbs}."],"min_age":1,"note":null,"per":{"kcal":416.6,"p":22.0,"f":11.9,"c":54.0,"ca":137.4,"fe":6.2,"zn":3.3,"mg":86.4,"vc":11.9}},{"id":"dal-rice","name":"Дал из красной чечевицы с рисом (мягкий пряный)","meals":["lunch","dinner"],"protein":"legumes","sauce":"spicy","garnish":"рис","time":35,"ings":[["red_lentils",280],["rice",240],["passata",300],["onion",100],["garlic",10],["cream",100],["spinach",100],["oil",20],["curry",0],["turmeric",0],["salt",0]],"steps":["Обжарьте лук {onion} и чеснок {garlic} на масле {oil} 4 минуты, добавьте 1 ч. л. мягкого карри и куркуму.","Всыпьте чечевицу {red_lentils}, влейте пассату {passata} и 700 мл воды.","Варите 20 минут, помешивая, пока чечевица не разварится.","Добавьте шпинат {spinach} и сливки {cream} и посолите.","Подавайте с отварным рисом {rice}."],"min_age":3,"note":"Без острого перца. Малышам можно уменьшить количество карри вдвое.","per":{"kcal":569.2,"p":23.7,"f":9.2,"c":97.0,"ca":120.4,"fe":7.3,"zn":3.7,"mg":100.0,"vc":17.2}}]};
+const ING = DB.ingredients, RECIPES = DB.recipes;
+
+const PROTEINS = [["beef","Говядина"],["chicken","Курица"],["turkey","Индейка"],["pork","Свинина"],["fish","Рыба"],["eggs","Яйца"],["dairy","Творог и каши"],["legumes","Бобовые"]];
+const SAUCES = [["tomato","Томатный"],["cream","Сливочный"],["sourcream","Сметанный"],["spicy","Пряный, мягкий"]];
+const MEALS = {breakfast:"Завтрак",lunch:"Обед",dinner:"Ужин"};
+const MEAL_SHARE = {breakfast:.25,lunch:.35,dinner:.25};
+const AGES = [
+  {k:"a1",label:"1–2 года",f:.4, n:{kcal:1300,p:39,f:44,c:188,ca:800,fe:10,zn:5,mg:80,vc:30}},
+  {k:"a3",label:"3–6 лет",f:.55,n:{kcal:1800,p:54,f:60,c:261,ca:900,fe:10,zn:8,mg:200,vc:50}},
+  {k:"a7",label:"7–10 лет",f:.75,n:{kcal:2100,p:63,f:70,c:305,ca:1100,fe:12,zn:10,mg:250,vc:60}},
+  {k:"a11",label:"11–14 лет",f:.9,n:{kcal:2400,p:72,f:80,c:349,ca:1200,fe:13.5,zn:12,mg:300,vc:65}},
+  {k:"a15",label:"15–17 лет",f:1,n:{kcal:2700,p:81,f:90,c:392,ca:1200,fe:16.5,zn:12,mg:350,vc:80}},
+];
+const AGE_MIN = {a1:1,a3:3,a7:7,a11:11,a15:15};
+const MINERALS = [["p","Белок"],["ca","Кальций"],["fe","Железо"],["zn","Цинк"],["mg","Магний"],["vc","Витамин C"]];
+const PLURAL_RECIPE = n => n%10==1&&n%100!=11?"рецепт":(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?"рецепта":"рецептов");
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- семья ---------- */
+let family = store.get("family", {adults:2, a1:0, a3:1, a7:1, a11:0, a15:0});
+let focusKid = null;
+const kidsList = () => AGES.filter(a => family[a.k] > 0);
+const portions = () => family.adults + AGES.reduce((s,a)=>s+family[a.k]*a.f,0);
+const scale = () => Math.max(portions(),.4)/4;
+
+function renderFamily(){
+  const rows = [["adults","Взрослые"], ...AGES.map(a=>[a.k,"Дети "+a.label])];
+  $("#family").innerHTML = rows.map(([k,l]) => `<div class="counter"><span>${l}</span>
+    <button aria-label="Меньше: ${l}" data-k="${k}" data-d="-1">−</button><span class="n">${family[k]}</span>
+    <button aria-label="Больше: ${l}" data-k="${k}" data-d="1">+</button></div>`).join("");
+  const p = portions();
+  $("#familySum").textContent = `Итого ≈ ${p.toFixed(1).replace(".",",")} взрослых порции. Граммовки в рецептах и списке покупок пересчитываются под это количество.`;
+}
+$("#family").addEventListener("click", e => {
+  const b = e.target.closest("button[data-k]"); if(!b) return;
+  const k=b.dataset.k; family[k]=Math.max(0,Math.min(8,family[k]+ +b.dataset.d));
+  store.set("family",family); renderFamily(); rerenderAll();
+});
+
+/* ---------- расчёты ---------- */
+function kidPct(r, age){ // % дневной нормы в детской порции
+  const o={}; for(const [k] of [["kcal"],["p"],["f"],["c"],["ca"],["fe"],["zn"],["mg"],["vc"]]) o[k]=r.per[k]*age.f/age.n[k]*100; return o;
+}
+function refAge(){ const ks=kidsList(); return (focusKid && family[focusKid]>0 ? AGES.find(a=>a.k===focusKid) : ks[0]) || AGES[1]; }
+function badges(r){
+  const a = refAge(), p = kidPct(r,a), b=[];
+  if(p.fe>=30) b.push("Много железа");
+  if(p.ca>=30) b.push("Источник кальция");
+  if(p.p>=40) b.push("Много белка");
+  if(p.vc>=60) b.push("Витамин C");
+  if(p.zn>=30) b.push("Цинк");
+  return b.slice(0,3);
+}
+function fmtQty(key, g){
+  const it = ING[key];
+  if(!g) return "по вкусу";
+  const s = g*scale();
+  if(it.pcs){ const n=Math.max(1,Math.round(s/it.pcs)); return `${n} ${it.unit_name}`; }
+  const v = s>=100 ? Math.round(s/10)*10 : Math.max(5,Math.round(s/5)*5);
+  return v>=1000 ? `${(v/1000).toFixed(2).replace(/\.?0+$/,"").replace(".",",")} кг` : `${v} г`;
+}
+const ageOk = r => kidsList().every(a => AGE_MIN[a.k] >= r.min_age);
+
+/* ---------- карточка ---------- */
+function card(r, extra=""){
+  const a = refAge();
+  const b = badges(r);
+  const warn = ageOk(r) ? "" : `<span class="tag-other">Для детей от ${r.min_age} лет</span>`;
+  return `<a class="card" href="#${r.id}" style="text-decoration:none;color:inherit">
+    ${extra}
+    <h3>${esc(r.name)}</h3>
+    <div class="meta"><span>${r.time} мин</span><span>${r.meals.map(m=>MEALS[m]).join(" · ")}</span><span>гарнир: ${esc(r.garnish)}</span></div>
+    <div class="macro" title="На взрослую порцию"><span><b>${Math.round(r.per.kcal)}</b> ккал</span><span>Б ${Math.round(r.per.p)}</span><span>Ж ${Math.round(r.per.f)}</span><span>У ${Math.round(r.per.c)}</span></div>
+    ${b.length?`<div class="badges">${b.map(x=>`<span class="badge">${x}</span>`).join("")}<span class="badge alt">для ${a.label}</span></div>`:""}
+    ${warn}
+  </a>`;
+}
+
+/* ---------- подбор ---------- */
+const state = {protein:null, withSauce:null, sauce:null};
+function chip(label, val, pressed, cnt, dis){
+  return `<button class="chip" data-v="${val}" aria-pressed="${pressed}" ${dis?"disabled":""}>${label}${cnt!=null?`<span class="cnt">${cnt}</span>`:""}</button>`;
+}
+function renderPicker(){
+  $("#proteinChips").innerHTML = PROTEINS.map(([k,l]) => chip(l,k,state.protein===k,RECIPES.filter(r=>r.protein===k).length)).join("");
+  const s2=$("#step2"), s3=$("#step3"), sr=$("#stepRes");
+  s2.hidden = !state.protein;
+  if(state.protein){
+    const pr = RECIPES.filter(r=>r.protein===state.protein);
+    const nNone = pr.filter(r=>r.sauce==="none").length, nS = pr.length-nNone;
+    $("#sauceYN").innerHTML = chip("Без соуса","no",state.withSauce===false,nNone) + chip("С соусом","yes",state.withSauce===true,nS);
+    s3.hidden = state.withSauce!==true;
+    if(state.withSauce) $("#sauceChips").innerHTML = SAUCES.map(([k,l])=>chip(l,k,state.sauce===k,pr.filter(r=>r.sauce===k).length)).join("");
+  } else s3.hidden = true;
+  const ready = state.protein && (state.withSauce===false || (state.withSauce && state.sauce));
+  sr.hidden = !ready;
+  $("#resNo").textContent = state.withSauce ? "4" : "3";
+  if(ready) renderResults();
+}
+function renderResults(){
+  const pr = RECIPES.filter(r=>r.protein===state.protein);
+  const want = state.withSauce ? state.sauce : "none";
+  let exact = pr.filter(r=>r.sauce===want);
+  exact.sort((a,b)=>ageOk(b)-ageOk(a));
+  let list = exact.slice(0,5).map(r=>card(r));
+  if(exact.length<5){
+    const other = pr.filter(r=>r.sauce!==want).slice(0,5-exact.length);
+    list = list.concat(other.map(r=>card(r,`<span class="tag-other">${r.sauce==="none"?"Без соуса":"Соус: "+SAUCES.find(s=>s[0]===r.sauce)[1].toLowerCase()}</span>`)));
+  }
+  const pl = PROTEINS.find(p=>p[0]===state.protein)[1];
+  $("#resHint").textContent = exact.length
+    ? `${pl}, ${state.withSauce?"соус "+SAUCES.find(s=>s[0]===state.sauce)[1].toLowerCase():"без соуса"}: ${exact.length} ${PLURAL_RECIPE(exact.length)}${exact.length<5?". Добавили похожие с другим соусом.":"."} Значки показывают пользу для ребёнка ${refAge().label}.`
+    : `Точных совпадений пока нет. Вот блюда из той же основы.`;
+  $("#results").innerHTML = list.join("") || `<p class="empty">Здесь пока пусто.</p>`;
+}
+document.querySelector(".picker").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if(!b || b.disabled) return;
+  const grp = b.parentElement.id, v=b.dataset.v;
+  if(grp==="proteinChips"){ state.protein=v; state.withSauce=null; state.sauce=null; }
+  else if(grp==="sauceYN"){ state.withSauce = v==="yes"; state.sauce=null; }
+  else if(grp==="sauceChips"){ state.sauce=v; }
+  else if(grp==="mealChips"){ surpriseMeal=v; renderMealChips(); doSurprise(); return; }
+  renderPicker();
+  const target = grp==="proteinChips"?"#step2":grp==="sauceYN"?(state.withSauce?"#step3":"#stepRes"):"#stepRes";
+  requestAnimationFrame(()=>{ const el=$(target); if(el && !el.hidden) el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"}); });
+});
+
+/* ---------- рандомайзер ---------- */
+function mealByTime(d=new Date()){ const h=d.getHours(); return h>=5&&h<11?"breakfast":h>=11&&h<16?"lunch":h>=16&&h<23?"dinner":"breakfast"; }
+let surpriseMeal = mealByTime(), recent = [], lastSurprise=null;
+function renderMealChips(){
+  const now=new Date(); $("#mealNow").textContent = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")} → ${MEALS[mealByTime(now)].toLowerCase()}`;
+  $("#mealChips").innerHTML = Object.entries(MEALS).map(([k,l])=>chip(l,k,surpriseMeal===k)).join("");
+}
+function doSurprise(){
+  let pool = RECIPES.filter(r=>r.meals.includes(surpriseMeal) && ageOk(r));
+  if(!pool.length) pool = RECIPES.filter(r=>r.meals.includes(surpriseMeal));
+  const fresh = pool.filter(r=>!recent.includes(r.id));
+  const from = fresh.length?fresh:pool;
+  const r = from[Math.floor(Math.random()*from.length)];
+  recent = [r.id,...recent].slice(0,Math.min(6,pool.length-1)); lastSurprise=r.id;
+  $("#surpriseResult").innerHTML = `<div class="results" style="grid-template-columns:1fr">${card(r)}</div>`;
+  $("#surpriseBtn").textContent = "Другой вариант";
+}
+$("#surpriseBtn").addEventListener("click", doSurprise);
+$("#mealChips").addEventListener("click", e=>{ const b=e.target.closest(".chip"); if(!b) return; surpriseMeal=b.dataset.v; renderMealChips(); doSurprise(); });
+
+/* ---------- рецепт ---------- */
+let checked = store.get("checked", {});
+function renderDetail(r){
+  const kids = kidsList();
+  const a = refAge();
+  const share = Math.max(...r.meals.map(m=>MEAL_SHARE[m]));
+  const pc = kidPct(r,a);
+  const rows = [];
+  if(family.adults) rows.push(`<tr><td>Взрослый</td><td class="num">${Math.round(r.per.kcal)}</td><td class="num">${Math.round(r.per.p)}</td><td class="num">${Math.round(r.per.f)}</td><td class="num">${Math.round(r.per.c)}</td></tr>`);
+  for(const k of (kids.length?kids:[AGES[1]])){
+    const p=kidPct(r,k), f=k.f;
+    rows.push(`<tr><td>Ребёнок ${k.label} <span class="pct">(${Math.round(f*100)}% порции)</span></td>
+      <td class="num">${Math.round(r.per.kcal*f)} <span class="pct">${Math.round(p.kcal)}%</span></td>
+      <td class="num">${Math.round(r.per.p*f)} <span class="pct">${Math.round(p.p)}%</span></td>
+      <td class="num">${Math.round(r.per.f*f)} <span class="pct">${Math.round(p.f)}%</span></td>
+      <td class="num">${Math.round(r.per.c*f)} <span class="pct">${Math.round(p.c)}%</span></td></tr>`);
+  }
+  const bars = MINERALS.map(([k,l])=>{
+    const v=pc[k], w=Math.min(v,100);
+    return `<div class="bar"><span>${l}</span><div class="track" role="img" aria-label="${l}: ${Math.round(v)}% дневной нормы"><div class="fill" style="width:${w}%"></div><div class="target" style="left:${share*100}%"></div></div><span class="v">${Math.round(v)}%</span></div>`;
+  }).join("");
+  const kidSw = kids.length>1 ? `<div class="kid-switch" id="kidSw">${kids.map(k=>chip(k.label,k.k,k.k===a.k)).join("")}</div>` : "";
+
+  // покупки
+  const groups = {}; const pantry=[];
+  r.ings.forEach(([k,g])=>{ const it=ING[k]; (it.pantry? pantry : (groups[it.group] ||= [])).push([k,g]); });
+  const item = ([k,g]) => { const it=ING[k], id=`chk-${r.id}-${k}`, on=!!checked[id];
+    return `<div class="shop-item ${on?"done":""}"><input type="checkbox" id="${id}" ${on?"checked":""}><label class="nm" for="${id}">${esc(it.name)}${it.sub?` <button class="sub-btn" data-sub="${id}" aria-expanded="false">нет в магазине?</button>`:""}</label><span class="qty">${fmtQty(k,g)}</span>${it.sub?`<div class="sub" id="sub-${id}" hidden>Замена: ${esc(it.sub)}</div>`:""}</div>`; };
+  const shop = Object.entries(groups).map(([gname,items])=>`<div class="shop-group"><div class="label">${gname}</div>${items.map(item).join("")}</div>`).join("")
+    + (pantry.length?`<details class="pantry"><summary>Обычно есть дома (${pantry.length})</summary><div class="shop-group" style="margin-top:6px">${pantry.map(item).join("")}</div></details>`:"");
+
+  const ingMap = Object.fromEntries(r.ings);
+  const steps = r.steps.map(s=>`<li><span>${esc(s).replace(/\{(\w+)\}/g,(m,k)=>`<q>${fmtQty(k,ingMap[k])}</q>`)}</span></li>`).join("");
+
+  $("#detail").innerHTML = `
+    <div class="detail-head">
+      <a class="btn ghost small back" href="#">← К подбору</a>
+      <div class="label">${r.meals.map(m=>MEALS[m]).join(" · ")} · ${r.time} мин · от ${r.min_age} ${r.min_age===1?"года":"лет"}</div>
+      <h1 style="font-size:clamp(1.3rem,3.6vw,1.8rem)">${esc(r.name)}</h1>
+      <p class="muted">Гарнир: ${esc(r.garnish)}. Количество продуктов рассчитано на ${portions().toFixed(1).replace(".",",")} взрослых порции.</p>
+      ${r.note?`<p class="note">${esc(r.note)}</p>`:""}
+      ${ageOk(r)?"":`<p class="note">Блюдо рекомендуется детям от ${r.min_age} лет. Самым младшим можно уменьшить специи или выбрать другой вариант.</p>`}
+    </div>
+    <div class="cols">
+      <section class="panel" aria-labelledby="hShop">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 id="hShop">Что купить</h2><button class="btn ghost small" id="copyList">Скопировать список</button></div>
+        <div class="shop">${shop}</div>
+        <div id="copyFallback"></div>
+      </section>
+      <section class="panel" aria-labelledby="hNut">
+        <h2 id="hNut">Пищевая ценность порции</h2>
+        <div class="tbl-wrap"><table><thead><tr><th>Кто</th><th>ккал</th><th>Белки, г</th><th>Жиры, г</th><th>Углев., г</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>
+        <p class="pct">% — доля дневной нормы ребёнка этого возраста.</p>
+        <div class="label" style="margin-top:6px">Белок, минералы и витамин C · ребёнок ${a.label}</div>
+        ${kidSw}
+        <div class="bars">${bars}</div>
+        <div class="legend"><span><i style="background:var(--accent)"></i>доля дневной нормы в порции</span><span><i style="background:var(--saffron);width:3px"></i>ориентир на один приём пищи (${Math.round(share*100)}%)</span></div>
+      </section>
+    </div>
+    <section class="panel" aria-labelledby="hSteps">
+      <h2 id="hSteps">Как готовить</h2>
+      <ol class="steps">${steps}</ol>
+    </section>`;
+
+  const d=$("#detail");
+  d.onchange = e => { if(e.target.type==="checkbox"){ checked[e.target.id]=e.target.checked; if(!e.target.checked) delete checked[e.target.id]; store.set("checked",checked); e.target.closest(".shop-item").classList.toggle("done",e.target.checked);} };
+  d.onclick = e => {
+    const sb=e.target.closest(".sub-btn"); if(sb){ e.preventDefault(); const el=document.getElementById("sub-"+sb.dataset.sub); el.hidden=!el.hidden; sb.setAttribute("aria-expanded",String(!el.hidden)); return; }
+    const kc=e.target.closest("#kidSw .chip"); if(kc){ focusKid=kc.dataset.v; renderDetail(r); return; }
+    if(e.target.closest("#copyList")){
+      const txt = `${r.name}\n` + r.ings.filter(([k])=>!ING[k].pantry).map(([k,g])=>`☐ ${ING[k].name} — ${fmtQty(k,g)}`).join("\n");
+      const done=()=>{ e.target.textContent="Скопировано"; setTimeout(()=>e.target.textContent="Скопировать список",1800); };
+      const fb=()=>{ $("#copyFallback").innerHTML=`<textarea class="copy-area" id="copyTxt" readonly>${esc(txt)}</textarea>`; const t=$("#copyTxt"); t.focus(); t.select(); };
+      try{ navigator.clipboard.writeText(txt).then(done,fb); }catch(err){ fb(); }
+    }
+  };
+}
+
+/* ---------- роутинг ---------- */
+function route(){
+  const id = decodeURIComponent(location.hash.slice(1));
+  const r = RECIPES.find(x=>x.id===id);
+  $("#main").hidden = !!r; $("#detail").hidden = !r;
+  if(r){ renderDetail(r); window.scrollTo(0,0); }
+}
+function rerenderAll(){
+  renderPicker(); renderMealChips();
+  if(lastSurprise){ const r=RECIPES.find(x=>x.id===lastSurprise); $("#surpriseResult").innerHTML=`<div class="results" style="grid-template-columns:1fr">${card(r)}</div>`; }
+  route();
+}
+window.addEventListener("hashchange", route);
+renderFamily(); renderMealChips(); doSurprise();
+state.protein="beef"; state.withSauce=true; state.sauce="tomato";
+renderPicker(); route();
+</script>
+
+</body>
+</html>

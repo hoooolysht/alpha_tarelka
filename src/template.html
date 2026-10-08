@@ -1,0 +1,438 @@
+<title>Семейная тарелка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: одна колонка-«кухонная доска» до 980px; сверху семья и кнопка «удиви», ниже пошаговый подбор; рецепт открывается на месте списка */
+:root{
+  --bg:#F2F5F0; --surface:#FFFFFF; --sunk:#E6ECE4; --line:#D3DCD0;
+  --fg:#1B2620; --muted:#5C6B61;
+  --accent:#2C6E49; --accent-ink:#FFFFFF; --accent-soft:#DCEBDF;
+  --saffron:#D99A1E; --saffron-soft:#F8EBCB;
+  --warn:#B4532A;
+  --f-display:"Unbounded", "Golos Text", system-ui, sans-serif;
+  --f-body:"Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-data:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815; --surface:#1A221D; --sunk:#222C26; --line:#2F3B34;
+  --fg:#E5ECE6; --muted:#9AAA9F;
+  --accent:#6FC08F; --accent-ink:#0F1A13; --accent-soft:#1F3A2A;
+  --saffron:#E8B444; --saffron-soft:#3A2F17; --warn:#E38B63; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815; --surface:#1A221D; --sunk:#222C26; --line:#2F3B34;
+  --fg:#E5ECE6; --muted:#9AAA9F;
+  --accent:#6FC08F; --accent-ink:#0F1A13; --accent-soft:#1F3A2A;
+  --saffron:#E8B444; --saffron-soft:#3A2F17; --warn:#E38B63; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--f-body);margin:0}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:grid;gap:22px}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(1.5rem,4vw,2.1rem)}
+h2{font-size:1.15rem}
+h3{font-size:1rem}
+p{margin:0}
+.muted{color:var(--muted)}
+.label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+a{color:var(--accent)}
+
+header.top{display:flex;flex-wrap:wrap;gap:16px;align-items:end;justify-content:space-between}
+header.top .brand{display:grid;gap:6px;min-width:0}
+header.top .brand p{max-width:60ch}
+
+/* Семья */
+.family{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px}
+.family-row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.counter{display:flex;align-items:center;gap:8px;font-size:.92rem}
+.counter .n{font-family:var(--f-data);min-width:1.4ch;text-align:center;font-weight:600}
+.counter button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--sunk);line-height:1}
+.counter button:hover{border-color:var(--accent)}
+.family .sum{font-size:.85rem;color:var(--muted)}
+
+/* Удиви */
+.surprise{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:var(--saffron-soft);border-radius:var(--r);padding:18px}
+.surprise h2{font-size:1.05rem}
+.surprise .meal-now{font-family:var(--f-data);font-size:.85rem}
+.btn{border:0;border-radius:999px;padding:12px 20px;font-weight:600;background:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.small{padding:8px 14px;font-size:.9rem}
+.meal-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.surprise-result{grid-column:1/-1}
+@media (max-width:560px){.surprise{grid-template-columns:1fr}}
+
+/* Шаги подбора */
+.picker{display:grid;gap:18px}
+.step{display:grid;gap:10px}
+.step-head{display:flex;gap:10px;align-items:baseline}
+.step-no{font-family:var(--f-data);font-weight:600;color:var(--accent);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:.95rem;display:inline-flex;gap:8px;align-items:center}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip .cnt{font-family:var(--f-data);font-size:.75rem;opacity:.7}
+.chip:disabled{opacity:.4;cursor:not-allowed}
+
+/* Карточки рецептов */
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;text-align:left;align-content:start}
+.card:hover{border-color:var(--accent)}
+.card h3{font-family:var(--f-body);font-weight:600;font-size:1.02rem;line-height:1.3}
+.card .meta{font-size:.82rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}
+.macro{display:flex;gap:12px;font-family:var(--f-data);font-size:.8rem;font-variant-numeric:tabular-nums}
+.macro b{font-weight:600}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{font-size:.72rem;padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:var(--fg)}
+.badge.alt{background:var(--saffron-soft)}
+.tag-other{font-size:.72rem;color:var(--warn);font-weight:600}
+
+/* Рецепт */
+.detail{display:grid;gap:22px}
+.detail-head{display:grid;gap:10px}
+.back{justify-self:start}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:22px;align-items:start}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px;min-width:0}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
+th,td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+td.num{font-family:var(--f-data)}
+.pct{font-size:.75rem;color:var(--muted)}
+.bars{display:grid;gap:9px}
+.bar{display:grid;grid-template-columns:7.5em 1fr 3.6em;gap:10px;align-items:center;font-size:.85rem}
+.bar .track{position:relative;height:10px;background:var(--sunk);border-radius:6px;overflow:visible}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:6px}
+.bar .target{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--saffron)}
+.bar .v{font-family:var(--f-data);text-align:right;font-size:.8rem}
+.legend{font-size:.78rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+.kid-switch{display:flex;gap:6px;flex-wrap:wrap}
+
+.shop{display:grid;gap:14px}
+.shop-group{display:grid;gap:4px}
+.shop-item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:5px 0}
+.shop-item input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.shop-item .qty{font-family:var(--f-data);font-size:.85rem;white-space:nowrap}
+.shop-item.done .nm{text-decoration:line-through;color:var(--muted)}
+.sub-btn{border:0;background:none;color:var(--accent);font-size:.78rem;padding:0;text-decoration:underline dotted}
+.sub{font-size:.82rem;color:var(--muted);grid-column:2/-1}
+details.pantry summary{cursor:pointer;font-size:.9rem;color:var(--muted)}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:14px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:2.2em 1fr;gap:10px;counter-increment:s}
+.steps li::before{content:counter(s);font-family:var(--f-data);font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:8px;text-align:center;height:2em;line-height:2em}
+.steps q{quotes:none;font-family:var(--f-data);font-size:.85em;background:var(--saffron-soft);padding:0 4px;border-radius:4px;white-space:nowrap}
+.note{background:var(--saffron-soft);border-radius:10px;padding:10px 12px;font-size:.9rem}
+.copy-area{width:100%;min-height:120px;font:13px/1.4 var(--f-data);background:var(--sunk);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px}
+footer{font-size:.8rem;color:var(--muted);display:grid;gap:6px;max-width:75ch}
+.empty{color:var(--muted);font-size:.95rem}
+@media (prefers-reduced-motion:no-preference){.card,.chip{transition:border-color .15s,background .15s}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Семейная тарелка</h1>
+      <p class="muted">Выберите, из чего готовить. Подберём простое домашнее блюдо, посчитаем БЖУ и минералы для ваших детей и составим список покупок.</p>
+    </div>
+  </header>
+
+  <section class="family" aria-label="Состав семьи">
+    <div class="label">Кто будет есть</div>
+    <div class="family-row" id="family"></div>
+    <div class="sum" id="familySum"></div>
+  </section>
+
+  <main id="main" class="picker">
+    <section class="surprise" aria-labelledby="sTitle">
+      <div>
+        <h2 id="sTitle">Не знаю, что приготовить</h2>
+        <p class="muted" style="font-size:.92rem">Случайное блюдо под текущее время суток: <span class="meal-now" id="mealNow"></span></p>
+        <div class="meal-chips" id="mealChips" role="group" aria-label="Приём пищи"></div>
+      </div>
+      <button class="btn" id="surpriseBtn">Предложить вариант</button>
+      <div class="surprise-result" id="surpriseResult"></div>
+    </section>
+
+    <section class="step" aria-labelledby="st1">
+      <div class="step-head"><span class="step-no">1</span><h2 id="st1">Основа блюда</h2></div>
+      <div class="chips" id="proteinChips" role="group" aria-label="Основной продукт"></div>
+    </section>
+
+    <section class="step" id="step2" hidden aria-labelledby="st2">
+      <div class="step-head"><span class="step-no">2</span><h2 id="st2">Готовим с соусом?</h2></div>
+      <div class="chips" id="sauceYN" role="group"></div>
+    </section>
+
+    <section class="step" id="step3" hidden aria-labelledby="st3">
+      <div class="step-head"><span class="step-no">3</span><h2 id="st3">Какой соус?</h2></div>
+      <div class="chips" id="sauceChips" role="group"></div>
+    </section>
+
+    <section class="step" id="stepRes" hidden aria-labelledby="st4">
+      <div class="step-head"><span class="step-no" id="resNo">4</span><h2 id="st4">Варианты блюд</h2></div>
+      <p class="muted" id="resHint" style="font-size:.9rem"></p>
+      <div class="results" id="results"></div>
+    </section>
+  </main>
+
+  <section id="detail" class="detail" hidden></section>
+
+  <footer>
+    <p>Пищевая ценность рассчитана по составу продуктов (справочные таблицы химического состава, сырой вес, без учёта потерь при готовке). Нормы для детей ориентировочные, по МР 2.3.1.0253-21 «Нормы физиологических потребностей в энергии и пищевых веществах». Для подростков 11–17 лет взято среднее между нормами для мальчиков и девочек.</p>
+    <p>Сайт не заменяет консультацию педиатра или диетолога, особенно при аллергиях и особых диетах.</p>
+  </footer>
+</div>
+
+<script>
+const DB = /*DB*/;
+const ING = DB.ingredients, RECIPES = DB.recipes;
+
+const PROTEINS = [["beef","Говядина"],["chicken","Курица"],["turkey","Индейка"],["pork","Свинина"],["fish","Рыба"],["eggs","Яйца"],["dairy","Творог и каши"],["legumes","Бобовые"]];
+const SAUCES = [["tomato","Томатный"],["cream","Сливочный"],["sourcream","Сметанный"],["spicy","Пряный, мягкий"]];
+const MEALS = {breakfast:"Завтрак",lunch:"Обед",dinner:"Ужин"};
+const MEAL_SHARE = {breakfast:.25,lunch:.35,dinner:.25};
+const AGES = [
+  {k:"a1",label:"1–2 года",f:.4, n:{kcal:1300,p:39,f:44,c:188,ca:800,fe:10,zn:5,mg:80,vc:30}},
+  {k:"a3",label:"3–6 лет",f:.55,n:{kcal:1800,p:54,f:60,c:261,ca:900,fe:10,zn:8,mg:200,vc:50}},
+  {k:"a7",label:"7–10 лет",f:.75,n:{kcal:2100,p:63,f:70,c:305,ca:1100,fe:12,zn:10,mg:250,vc:60}},
+  {k:"a11",label:"11–14 лет",f:.9,n:{kcal:2400,p:72,f:80,c:349,ca:1200,fe:13.5,zn:12,mg:300,vc:65}},
+  {k:"a15",label:"15–17 лет",f:1,n:{kcal:2700,p:81,f:90,c:392,ca:1200,fe:16.5,zn:12,mg:350,vc:80}},
+];
+const AGE_MIN = {a1:1,a3:3,a7:7,a11:11,a15:15};
+const MINERALS = [["p","Белок"],["ca","Кальций"],["fe","Железо"],["zn","Цинк"],["mg","Магний"],["vc","Витамин C"]];
+const PLURAL_RECIPE = n => n%10==1&&n%100!=11?"рецепт":(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?"рецепта":"рецептов");
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- семья ---------- */
+let family = store.get("family", {adults:2, a1:0, a3:1, a7:1, a11:0, a15:0});
+let focusKid = null;
+const kidsList = () => AGES.filter(a => family[a.k] > 0);
+const portions = () => family.adults + AGES.reduce((s,a)=>s+family[a.k]*a.f,0);
+const scale = () => Math.max(portions(),.4)/4;
+
+function renderFamily(){
+  const rows = [["adults","Взрослые"], ...AGES.map(a=>[a.k,"Дети "+a.label])];
+  $("#family").innerHTML = rows.map(([k,l]) => `<div class="counter"><span>${l}</span>
+    <button aria-label="Меньше: ${l}" data-k="${k}" data-d="-1">−</button><span class="n">${family[k]}</span>
+    <button aria-label="Больше: ${l}" data-k="${k}" data-d="1">+</button></div>`).join("");
+  const p = portions();
+  $("#familySum").textContent = `Итого ≈ ${p.toFixed(1).replace(".",",")} взрослых порции. Граммовки в рецептах и списке покупок пересчитываются под это количество.`;
+}
+$("#family").addEventListener("click", e => {
+  const b = e.target.closest("button[data-k]"); if(!b) return;
+  const k=b.dataset.k; family[k]=Math.max(0,Math.min(8,family[k]+ +b.dataset.d));
+  store.set("family",family); renderFamily(); rerenderAll();
+});
+
+/* ---------- расчёты ---------- */
+function kidPct(r, age){ // % дневной нормы в детской порции
+  const o={}; for(const [k] of [["kcal"],["p"],["f"],["c"],["ca"],["fe"],["zn"],["mg"],["vc"]]) o[k]=r.per[k]*age.f/age.n[k]*100; return o;
+}
+function refAge(){ const ks=kidsList(); return (focusKid && family[focusKid]>0 ? AGES.find(a=>a.k===focusKid) : ks[0]) || AGES[1]; }
+function badges(r){
+  const a = refAge(), p = kidPct(r,a), b=[];
+  if(p.fe>=30) b.push("Много железа");
+  if(p.ca>=30) b.push("Источник кальция");
+  if(p.p>=40) b.push("Много белка");
+  if(p.vc>=60) b.push("Витамин C");
+  if(p.zn>=30) b.push("Цинк");
+  return b.slice(0,3);
+}
+function fmtQty(key, g){
+  const it = ING[key];
+  if(!g) return "по вкусу";
+  const s = g*scale();
+  if(it.pcs){ const n=Math.max(1,Math.round(s/it.pcs)); return `${n} ${it.unit_name}`; }
+  const v = s>=100 ? Math.round(s/10)*10 : Math.max(5,Math.round(s/5)*5);
+  return v>=1000 ? `${(v/1000).toFixed(2).replace(/\.?0+$/,"").replace(".",",")} кг` : `${v} г`;
+}
+const ageOk = r => kidsList().every(a => AGE_MIN[a.k] >= r.min_age);
+
+/* ---------- карточка ---------- */
+function card(r, extra=""){
+  const a = refAge();
+  const b = badges(r);
+  const warn = ageOk(r) ? "" : `<span class="tag-other">Для детей от ${r.min_age} лет</span>`;
+  return `<a class="card" href="#${r.id}" style="text-decoration:none;color:inherit">
+    ${extra}
+    <h3>${esc(r.name)}</h3>
+    <div class="meta"><span>${r.time} мин</span><span>${r.meals.map(m=>MEALS[m]).join(" · ")}</span><span>гарнир: ${esc(r.garnish)}</span></div>
+    <div class="macro" title="На взрослую порцию"><span><b>${Math.round(r.per.kcal)}</b> ккал</span><span>Б ${Math.round(r.per.p)}</span><span>Ж ${Math.round(r.per.f)}</span><span>У ${Math.round(r.per.c)}</span></div>
+    ${b.length?`<div class="badges">${b.map(x=>`<span class="badge">${x}</span>`).join("")}<span class="badge alt">для ${a.label}</span></div>`:""}
+    ${warn}
+  </a>`;
+}
+
+/* ---------- подбор ---------- */
+const state = {protein:null, withSauce:null, sauce:null};
+function chip(label, val, pressed, cnt, dis){
+  return `<button class="chip" data-v="${val}" aria-pressed="${pressed}" ${dis?"disabled":""}>${label}${cnt!=null?`<span class="cnt">${cnt}</span>`:""}</button>`;
+}
+function renderPicker(){
+  $("#proteinChips").innerHTML = PROTEINS.map(([k,l]) => chip(l,k,state.protein===k,RECIPES.filter(r=>r.protein===k).length)).join("");
+  const s2=$("#step2"), s3=$("#step3"), sr=$("#stepRes");
+  s2.hidden = !state.protein;
+  if(state.protein){
+    const pr = RECIPES.filter(r=>r.protein===state.protein);
+    const nNone = pr.filter(r=>r.sauce==="none").length, nS = pr.length-nNone;
+    $("#sauceYN").innerHTML = chip("Без соуса","no",state.withSauce===false,nNone) + chip("С соусом","yes",state.withSauce===true,nS);
+    s3.hidden = state.withSauce!==true;
+    if(state.withSauce) $("#sauceChips").innerHTML = SAUCES.map(([k,l])=>chip(l,k,state.sauce===k,pr.filter(r=>r.sauce===k).length)).join("");
+  } else s3.hidden = true;
+  const ready = state.protein && (state.withSauce===false || (state.withSauce && state.sauce));
+  sr.hidden = !ready;
+  $("#resNo").textContent = state.withSauce ? "4" : "3";
+  if(ready) renderResults();
+}
+function renderResults(){
+  const pr = RECIPES.filter(r=>r.protein===state.protein);
+  const want = state.withSauce ? state.sauce : "none";
+  let exact = pr.filter(r=>r.sauce===want);
+  exact.sort((a,b)=>ageOk(b)-ageOk(a));
+  let list = exact.slice(0,5).map(r=>card(r));
+  if(exact.length<5){
+    const other = pr.filter(r=>r.sauce!==want).slice(0,5-exact.length);
+    list = list.concat(other.map(r=>card(r,`<span class="tag-other">${r.sauce==="none"?"Без соуса":"Соус: "+SAUCES.find(s=>s[0]===r.sauce)[1].toLowerCase()}</span>`)));
+  }
+  const pl = PROTEINS.find(p=>p[0]===state.protein)[1];
+  $("#resHint").textContent = exact.length
+    ? `${pl}, ${state.withSauce?"соус "+SAUCES.find(s=>s[0]===state.sauce)[1].toLowerCase():"без соуса"}: ${exact.length} ${PLURAL_RECIPE(exact.length)}${exact.length<5?". Добавили похожие с другим соусом.":"."} Значки показывают пользу для ребёнка ${refAge().label}.`
+    : `Точных совпадений пока нет. Вот блюда из той же основы.`;
+  $("#results").innerHTML = list.join("") || `<p class="empty">Здесь пока пусто.</p>`;
+}
+document.querySelector(".picker").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if(!b || b.disabled) return;
+  const grp = b.parentElement.id, v=b.dataset.v;
+  if(grp==="proteinChips"){ state.protein=v; state.withSauce=null; state.sauce=null; }
+  else if(grp==="sauceYN"){ state.withSauce = v==="yes"; state.sauce=null; }
+  else if(grp==="sauceChips"){ state.sauce=v; }
+  else if(grp==="mealChips"){ surpriseMeal=v; renderMealChips(); doSurprise(); return; }
+  renderPicker();
+  const target = grp==="proteinChips"?"#step2":grp==="sauceYN"?(state.withSauce?"#step3":"#stepRes"):"#stepRes";
+  requestAnimationFrame(()=>{ const el=$(target); if(el && !el.hidden) el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"}); });
+});
+
+/* ---------- рандомайзер ---------- */
+function mealByTime(d=new Date()){ const h=d.getHours(); return h>=5&&h<11?"breakfast":h>=11&&h<16?"lunch":h>=16&&h<23?"dinner":"breakfast"; }
+let surpriseMeal = mealByTime(), recent = [], lastSurprise=null;
+function renderMealChips(){
+  const now=new Date(); $("#mealNow").textContent = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")} → ${MEALS[mealByTime(now)].toLowerCase()}`;
+  $("#mealChips").innerHTML = Object.entries(MEALS).map(([k,l])=>chip(l,k,surpriseMeal===k)).join("");
+}
+function doSurprise(){
+  let pool = RECIPES.filter(r=>r.meals.includes(surpriseMeal) && ageOk(r));
+  if(!pool.length) pool = RECIPES.filter(r=>r.meals.includes(surpriseMeal));
+  const fresh = pool.filter(r=>!recent.includes(r.id));
+  const from = fresh.length?fresh:pool;
+  const r = from[Math.floor(Math.random()*from.length)];
+  recent = [r.id,...recent].slice(0,Math.min(6,pool.length-1)); lastSurprise=r.id;
+  $("#surpriseResult").innerHTML = `<div class="results" style="grid-template-columns:1fr">${card(r)}</div>`;
+  $("#surpriseBtn").textContent = "Другой вариант";
+}
+$("#surpriseBtn").addEventListener("click", doSurprise);
+$("#mealChips").addEventListener("click", e=>{ const b=e.target.closest(".chip"); if(!b) return; surpriseMeal=b.dataset.v; renderMealChips(); doSurprise(); });
+
+/* ---------- рецепт ---------- */
+let checked = store.get("checked", {});
+function renderDetail(r){
+  const kids = kidsList();
+  const a = refAge();
+  const share = Math.max(...r.meals.map(m=>MEAL_SHARE[m]));
+  const pc = kidPct(r,a);
+  const rows = [];
+  if(family.adults) rows.push(`<tr><td>Взрослый</td><td class="num">${Math.round(r.per.kcal)}</td><td class="num">${Math.round(r.per.p)}</td><td class="num">${Math.round(r.per.f)}</td><td class="num">${Math.round(r.per.c)}</td></tr>`);
+  for(const k of (kids.length?kids:[AGES[1]])){
+    const p=kidPct(r,k), f=k.f;
+    rows.push(`<tr><td>Ребёнок ${k.label} <span class="pct">(${Math.round(f*100)}% порции)</span></td>
+      <td class="num">${Math.round(r.per.kcal*f)} <span class="pct">${Math.round(p.kcal)}%</span></td>
+      <td class="num">${Math.round(r.per.p*f)} <span class="pct">${Math.round(p.p)}%</span></td>
+      <td class="num">${Math.round(r.per.f*f)} <span class="pct">${Math.round(p.f)}%</span></td>
+      <td class="num">${Math.round(r.per.c*f)} <span class="pct">${Math.round(p.c)}%</span></td></tr>`);
+  }
+  const bars = MINERALS.map(([k,l])=>{
+    const v=pc[k], w=Math.min(v,100);
+    return `<div class="bar"><span>${l}</span><div class="track" role="img" aria-label="${l}: ${Math.round(v)}% дневной нормы"><div class="fill" style="width:${w}%"></div><div class="target" style="left:${share*100}%"></div></div><span class="v">${Math.round(v)}%</span></div>`;
+  }).join("");
+  const kidSw = kids.length>1 ? `<div class="kid-switch" id="kidSw">${kids.map(k=>chip(k.label,k.k,k.k===a.k)).join("")}</div>` : "";
+
+  // покупки
+  const groups = {}; const pantry=[];
+  r.ings.forEach(([k,g])=>{ const it=ING[k]; (it.pantry? pantry : (groups[it.group] ||= [])).push([k,g]); });
+  const item = ([k,g]) => { const it=ING[k], id=`chk-${r.id}-${k}`, on=!!checked[id];
+    return `<div class="shop-item ${on?"done":""}"><input type="checkbox" id="${id}" ${on?"checked":""}><label class="nm" for="${id}">${esc(it.name)}${it.sub?` <button class="sub-btn" data-sub="${id}" aria-expanded="false">нет в магазине?</button>`:""}</label><span class="qty">${fmtQty(k,g)}</span>${it.sub?`<div class="sub" id="sub-${id}" hidden>Замена: ${esc(it.sub)}</div>`:""}</div>`; };
+  const shop = Object.entries(groups).map(([gname,items])=>`<div class="shop-group"><div class="label">${gname}</div>${items.map(item).join("")}</div>`).join("")
+    + (pantry.length?`<details class="pantry"><summary>Обычно есть дома (${pantry.length})</summary><div class="shop-group" style="margin-top:6px">${pantry.map(item).join("")}</div></details>`:"");
+
+  const ingMap = Object.fromEntries(r.ings);
+  const steps = r.steps.map(s=>`<li><span>${esc(s).replace(/\{(\w+)\}/g,(m,k)=>`<q>${fmtQty(k,ingMap[k])}</q>`)}</span></li>`).join("");
+
+  $("#detail").innerHTML = `
+    <div class="detail-head">
+      <a class="btn ghost small back" href="#">← К подбору</a>
+      <div class="label">${r.meals.map(m=>MEALS[m]).join(" · ")} · ${r.time} мин · от ${r.min_age} ${r.min_age===1?"года":"лет"}</div>
+      <h1 style="font-size:clamp(1.3rem,3.6vw,1.8rem)">${esc(r.name)}</h1>
+      <p class="muted">Гарнир: ${esc(r.garnish)}. Количество продуктов рассчитано на ${portions().toFixed(1).replace(".",",")} взрослых порции.</p>
+      ${r.note?`<p class="note">${esc(r.note)}</p>`:""}
+      ${ageOk(r)?"":`<p class="note">Блюдо рекомендуется детям от ${r.min_age} лет. Самым младшим можно уменьшить специи или выбрать другой вариант.</p>`}
+    </div>
+    <div class="cols">
+      <section class="panel" aria-labelledby="hShop">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 id="hShop">Что купить</h2><button class="btn ghost small" id="copyList">Скопировать список</button></div>
+        <div class="shop">${shop}</div>
+        <div id="copyFallback"></div>
+      </section>
+      <section class="panel" aria-labelledby="hNut">
+        <h2 id="hNut">Пищевая ценность порции</h2>
+        <div class="tbl-wrap"><table><thead><tr><th>Кто</th><th>ккал</th><th>Белки, г</th><th>Жиры, г</th><th>Углев., г</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>
+        <p class="pct">% — доля дневной нормы ребёнка этого возраста.</p>
+        <div class="label" style="margin-top:6px">Белок, минералы и витамин C · ребёнок ${a.label}</div>
+        ${kidSw}
+        <div class="bars">${bars}</div>
+        <div class="legend"><span><i style="background:var(--accent)"></i>доля дневной нормы в порции</span><span><i style="background:var(--saffron);width:3px"></i>ориентир на один приём пищи (${Math.round(share*100)}%)</span></div>
+      </section>
+    </div>
+    <section class="panel" aria-labelledby="hSteps">
+      <h2 id="hSteps">Как готовить</h2>
+      <ol class="steps">${steps}</ol>
+    </section>`;
+
+  const d=$("#detail");
+  d.onchange = e => { if(e.target.type==="checkbox"){ checked[e.target.id]=e.target.checked; if(!e.target.checked) delete checked[e.target.id]; store.set("checked",checked); e.target.closest(".shop-item").classList.toggle("done",e.target.checked);} };
+  d.onclick = e => {
+    const sb=e.target.closest(".sub-btn"); if(sb){ e.preventDefault(); const el=document.getElementById("sub-"+sb.dataset.sub); el.hidden=!el.hidden; sb.setAttribute("aria-expanded",String(!el.hidden)); return; }
+    const kc=e.target.closest("#kidSw .chip"); if(kc){ focusKid=kc.dataset.v; renderDetail(r); return; }
+    if(e.target.closest("#copyList")){
+      const txt = `${r.name}\n` + r.ings.filter(([k])=>!ING[k].pantry).map(([k,g])=>`☐ ${ING[k].name} — ${fmtQty(k,g)}`).join("\n");
+      const done=()=>{ e.target.textContent="Скопировано"; setTimeout(()=>e.target.textContent="Скопировать список",1800); };
+      const fb=()=>{ $("#copyFallback").innerHTML=`<textarea class="copy-area" id="copyTxt" readonly>${esc(txt)}</textarea>`; const t=$("#copyTxt"); t.focus(); t.select(); };
+      try{ navigator.clipboard.writeText(txt).then(done,fb); }catch(err){ fb(); }
+    }
+  };
+}
+
+/* ---------- роутинг ---------- */
+function route(){
+  const id = decodeURIComponent(location.hash.slice(1));
+  const r = RECIPES.find(x=>x.id===id);
+  $("#main").hidden = !!r; $("#detail").hidden = !r;
+  if(r){ renderDetail(r); window.scrollTo(0,0); }
+}
+function rerenderAll(){
+  renderPicker(); renderMealChips();
+  if(lastSurprise){ const r=RECIPES.find(x=>x.id===lastSurprise); $("#surpriseResult").innerHTML=`<div class="results" style="grid-template-columns:1fr">${card(r)}</div>`; }
+  route();
+}
+window.addEventListener("hashchange", route);
+renderFamily(); renderMealChips(); doSurprise();
+state.protein="beef"; state.withSauce=true; state.sauce="tomato";
+renderPicker(); route();
+</script>
