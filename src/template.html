@@ -93,6 +93,16 @@ header.top .brand p{max-width:56ch;color:#4D5B53}
 .badges{display:flex;flex-wrap:wrap;gap:6px}
 .badge{font-size:.74rem;padding:3px 9px;border-radius:999px;background:var(--mint);color:#2C6B4B}
 .badge.alt{background:var(--butter);color:#7A5B14}
+.top-line{font-size:.82rem;color:var(--peach-ink);font-weight:600}
+.cuisine{justify-self:start;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#7A5B14;background:var(--butter);border-radius:999px;padding:2px 9px}
+.topping{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;background:var(--peach);border-radius:var(--r);padding:18px}
+.top-ico{width:40px;height:40px;border-radius:50%;background:var(--peach-ink);color:#fff;display:grid;place-items:center;font:800 1.4rem/1 var(--f-display)}
+.top-body{display:grid;gap:6px;min-width:0}
+.top-gain{font-size:.92rem}
+.top-gain b{color:var(--accent)}
+.top-toggle{display:flex;gap:8px;align-items:center;font-size:.88rem;color:var(--muted);cursor:pointer;margin-top:4px}
+.top-toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.top-group .label{color:var(--peach-ink)}
 .tag-other{font-size:.74rem;color:var(--warn);font-weight:600}
 
 /* Рецепт */
@@ -187,6 +197,7 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:6px;max-width:75ch;pa
 
     <section class="step" id="stepRes" hidden aria-labelledby="st4">
       <div class="step-head"><span class="step-no" id="resNo">4</span><h2 id="st4">Что можно приготовить</h2></div>
+      <div class="chips" id="cuisineChips" role="group" aria-label="Кухня"></div>
       <p class="muted" id="resHint" style="font-size:.9rem"></p>
       <div class="results" id="results"></div>
     </section>
@@ -205,7 +216,12 @@ const DB = /*DB*/;
 const ING = DB.ingredients, RECIPES = DB.recipes;
 
 const PROTEINS = [["beef","Говядина"],["chicken","Курица"],["turkey","Индейка"],["pork","Свинина"],["fish","Рыба"],["eggs","Яйца"],["dairy","Творог и каши"],["legumes","Бобовые"]];
-const SAUCES = [["tomato","Томатный"],["cream","Сливочный"],["sourcream","Сметанный"],["spicy","Пряный, мягкий"]];
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const SAUCES = [["tomato","Томатный"],["cream","Сливочный"],["sourcream","Сметанный"],["spicy","Пряный, мягкий"],["asian","Азиатский соево-медовый"]];
+const CUISINES = {home:"Домашняя",italian:"Итальянская",mexican:"Мексиканская",asian:"Азиатская"};
+let useTop = store.get("useTop", true);
+const NK=["kcal","p","f","c","ca","fe","zn","mg","vc"];
+function N(r){ if(!useTop) return r.per; const o={}; for(const k of NK) o[k]=r.per[k]+r.topping.per[k]; return o; }
 const MEALS = {breakfast:"Завтрак",lunch:"Обед",dinner:"Ужин"};
 const MEAL_SHARE = {breakfast:.25,lunch:.35,dinner:.25};
 const AGES = [
@@ -221,7 +237,6 @@ const PLURAL_RECIPE = n => n%10==1&&n%100!=11?"рецепт":(n%10>=2&&n%10<=4&&
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
 /* ---------- семья ---------- */
 let family = store.get("family", {adults:2, a1:0, a3:1, a7:1, a11:0, a15:0});
@@ -246,7 +261,7 @@ $("#family").addEventListener("click", e => {
 
 /* ---------- расчёты ---------- */
 function kidPct(r, age){ // % дневной нормы в детской порции
-  const o={}; for(const [k] of [["kcal"],["p"],["f"],["c"],["ca"],["fe"],["zn"],["mg"],["vc"]]) o[k]=r.per[k]*age.f/age.n[k]*100; return o;
+  const o={}; for(const [k] of [["kcal"],["p"],["f"],["c"],["ca"],["fe"],["zn"],["mg"],["vc"]]) o[k]=N(r)[k]*age.f/age.n[k]*100; return o;
 }
 function refAge(){ const ks=kidsList(); return (focusKid && family[focusKid]>0 ? AGES.find(a=>a.k===focusKid) : ks[0]) || AGES[1]; }
 function badges(r){
@@ -275,16 +290,17 @@ function card(r, extra=""){
   const warn = ageOk(r) ? "" : `<span class="tag-other">Для детей от ${r.min_age} лет</span>`;
   return `<a class="card" href="#${r.id}" style="text-decoration:none;color:inherit">
     ${extra}
-    <h3>${esc(r.name)}</h3>
+    ${r.cuisine!=="home"?`<span class="cuisine">${CUISINES[r.cuisine]} кухня</span>`:""}<h3>${esc(r.name)}</h3>
     <div class="meta"><span>${r.time} мин</span><span>${r.meals.map(m=>MEALS[m]).join(" · ")}</span><span>гарнир: ${esc(r.garnish)}</span></div>
-    <div class="macro" title="На взрослую порцию"><span><b>${Math.round(r.per.kcal)}</b> ккал</span><span>Б ${Math.round(r.per.p)}</span><span>Ж ${Math.round(r.per.f)}</span><span>У ${Math.round(r.per.c)}</span></div>
+    <div class="macro" title="На взрослую порцию"><span><b>${Math.round(N(r).kcal)}</b> ккал</span><span>Б ${Math.round(N(r).p)}</span><span>Ж ${Math.round(N(r).f)}</span><span>У ${Math.round(N(r).c)}</span></div>
+    <div class="top-line">+ ${esc(r.topping.name.toLowerCase())}</div>
     ${b.length?`<div class="badges">${b.map(x=>`<span class="badge">${x}</span>`).join("")}<span class="badge alt">для ${a.label}</span></div>`:""}
     ${warn}
   </a>`;
 }
 
 /* ---------- подбор ---------- */
-const state = {protein:null, withSauce:null, sauce:null, active:1};
+const state = {protein:null, withSauce:null, sauce:null, active:1, cuisine:"all"};
 function chip(label, val, pressed, cnt, dis){
   return `<button class="chip" data-v="${val}" aria-pressed="${pressed}" ${dis?"disabled":""}>${label}${cnt!=null?`<span class="cnt">${cnt}</span>`:""}</button>`;
 }
@@ -316,7 +332,12 @@ function renderPicker(){
   if(A===4){ renderResults(); if(wasHidden){ sr.classList.remove("enter"); void sr.offsetWidth; sr.classList.add("enter"); } }
 }
 function renderResults(){
-  const pr = RECIPES.filter(r=>r.protein===state.protein);
+  const all = RECIPES.filter(r=>r.protein===state.protein);
+  const cs = [...new Set(all.map(r=>r.cuisine))];
+  if(!cs.includes(state.cuisine)) state.cuisine="all";
+  $("#cuisineChips").innerHTML = cs.length>1 ? chip("Любая кухня","all",state.cuisine==="all") + Object.keys(CUISINES).filter(c=>cs.includes(c)).map(c=>chip(CUISINES[c],c,state.cuisine===c,all.filter(r=>r.cuisine===c).length)).join("") : "";
+  $("#cuisineChips").hidden = cs.length<2;
+  const pr = state.cuisine==="all" ? all : all.filter(r=>r.cuisine===state.cuisine);
   const want = state.withSauce ? state.sauce : "none";
   let exact = pr.filter(r=>r.sauce===want);
   exact.sort((a,b)=>ageOk(b)-ageOk(a));
@@ -336,7 +357,8 @@ document.querySelector(".picker").addEventListener("click", e => {
   if(ed){ state.active = +ed.dataset.step; renderPicker(); return; }
   const b = e.target.closest(".chip"); if(!b || b.disabled) return;
   const grp = b.parentElement.id, v=b.dataset.v;
-  if(grp==="proteinChips"){ state.protein=v; state.withSauce=null; state.sauce=null; state.active=2; }
+  if(grp==="cuisineChips"){ state.cuisine=v; renderResults(); return; }
+  if(grp==="proteinChips"){ state.protein=v; state.withSauce=null; state.sauce=null; state.cuisine="all"; state.active=2; }
   else if(grp==="sauceYN"){ state.withSauce = v==="yes"; state.sauce=null; state.active = state.withSauce?3:4; }
   else if(grp==="sauceChips"){ state.sauce=v; state.active=4; }
   else return;
@@ -371,16 +393,16 @@ function renderDetail(r){
   const kids = kidsList();
   const a = refAge();
   const share = Math.max(...r.meals.map(m=>MEAL_SHARE[m]));
-  const pc = kidPct(r,a);
+  const pc = kidPct(r,a); const nt = N(r);
   const rows = [];
-  if(family.adults) rows.push(`<tr><td>Взрослый</td><td class="num">${Math.round(r.per.kcal)}</td><td class="num">${Math.round(r.per.p)}</td><td class="num">${Math.round(r.per.f)}</td><td class="num">${Math.round(r.per.c)}</td></tr>`);
+  if(family.adults) rows.push(`<tr><td>Взрослый</td><td class="num">${Math.round(nt.kcal)}</td><td class="num">${Math.round(nt.p)}</td><td class="num">${Math.round(nt.f)}</td><td class="num">${Math.round(nt.c)}</td></tr>`);
   for(const k of (kids.length?kids:[AGES[1]])){
     const p=kidPct(r,k), f=k.f;
     rows.push(`<tr><td>Ребёнок ${k.label} <span class="pct">(${Math.round(f*100)}% порции)</span></td>
-      <td class="num">${Math.round(r.per.kcal*f)} <span class="pct">${Math.round(p.kcal)}%</span></td>
-      <td class="num">${Math.round(r.per.p*f)} <span class="pct">${Math.round(p.p)}%</span></td>
-      <td class="num">${Math.round(r.per.f*f)} <span class="pct">${Math.round(p.f)}%</span></td>
-      <td class="num">${Math.round(r.per.c*f)} <span class="pct">${Math.round(p.c)}%</span></td></tr>`);
+      <td class="num">${Math.round(nt.kcal*f)} <span class="pct">${Math.round(p.kcal)}%</span></td>
+      <td class="num">${Math.round(nt.p*f)} <span class="pct">${Math.round(p.p)}%</span></td>
+      <td class="num">${Math.round(nt.f*f)} <span class="pct">${Math.round(p.f)}%</span></td>
+      <td class="num">${Math.round(nt.c*f)} <span class="pct">${Math.round(p.c)}%</span></td></tr>`);
   }
   const bars = MINERALS.map(([k,l])=>{
     const v=pc[k], w=Math.min(v,100);
@@ -391,12 +413,26 @@ function renderDetail(r){
   // покупки
   const groups = {}; const pantry=[];
   r.ings.forEach(([k,g])=>{ const it=ING[k]; (it.pantry? pantry : (groups[it.group] ||= [])).push([k,g]); });
-  const item = ([k,g]) => { const it=ING[k], id=`chk-${r.id}-${k}`, on=!!checked[id];
+  const topItems = r.topping.ings.filter(([k])=>!ING[k].pantry || !r.ings.some(x=>x[0]===k));
+  const item = ([k,g],pre="") => { const it=ING[k], id=`chk-${r.id}-${pre}${k}`, on=!!checked[id];
     return `<div class="shop-item ${on?"done":""}"><input type="checkbox" id="${id}" ${on?"checked":""}><label class="nm" for="${id}">${esc(it.name)}${it.sub?` <button class="sub-btn" data-sub="${id}" aria-expanded="false">нет в магазине?</button>`:""}</label><span class="qty">${fmtQty(k,g)}</span>${it.sub?`<div class="sub" id="sub-${id}" hidden>Замена: ${esc(it.sub)}</div>`:""}</div>`; };
-  const shop = Object.entries(groups).map(([gname,items])=>`<div class="shop-group"><div class="label">${gname}</div>${items.map(item).join("")}</div>`).join("")
-    + (pantry.length?`<details class="pantry"><summary>Обычно есть дома (${pantry.length})</summary><div class="shop-group" style="margin-top:6px">${pantry.map(item).join("")}</div></details>`:"");
+  const shop = Object.entries(groups).map(([gname,items])=>`<div class="shop-group"><div class="label">${gname}</div>${items.map(x=>item(x)).join("")}</div>`).join("")
+    + (useTop?`<div class="shop-group top-group"><div class="label">Добавка: ${esc(r.topping.name.toLowerCase())}</div>${topItems.map(x=>item(x,"top-")).join("")}</div>`:"")
+    + (pantry.length?`<details class="pantry"><summary>Обычно есть дома (${pantry.length})</summary><div class="shop-group" style="margin-top:6px">${pantry.map(x=>item(x)).join("")}</div></details>`:"");
 
-  const ingMap = Object.fromEntries(r.ings);
+  const DN={p:"белка",ca:"кальция",fe:"железа",zn:"цинка",mg:"магния",vc:"витамина C"};
+  const deltas = Object.keys(DN).map(k=>[k, r.topping.per[k]*a.f/a.n[k]*100]).filter(([k,v])=>v>=3).sort((x,y)=>y[1]-x[1]);
+  const topPanel = `<section class="topping" aria-labelledby="hTop">
+      <div class="top-ico" aria-hidden="true">+</div>
+      <div class="top-body">
+        <div class="label">Добавка для баланса</div>
+        <h2 id="hTop">${esc(r.topping.name)}</h2>
+        <p>${esc(r.topping.how)}</p>
+        ${deltas.length?`<p class="top-gain">Ребёнку ${a.label} добавит: ${deltas.map(([k,v])=>`<b>+${Math.round(v)}%</b> ${DN[k]}`).join(", ")} от дневной нормы.</p>`:""}
+        <label class="top-toggle"><input type="checkbox" id="useTop" ${useTop?"checked":""}> Учитывать добавку в расчётах и списке покупок</label>
+      </div>
+    </section>`;
+  const ingMap = Object.fromEntries([...r.ings, ...r.topping.ings]);
   const steps = r.steps.map(s=>`<li><span>${esc(s).replace(/\{(\w+)\}/g,(m,k)=>`<q>${fmtQty(k,ingMap[k])}</q>`)}</span></li>`).join("");
 
   $("#detail").innerHTML = `
@@ -408,6 +444,7 @@ function renderDetail(r){
       ${r.note?`<p class="note">${esc(r.note)}</p>`:""}
       ${ageOk(r)?"":`<p class="note">Блюдо рекомендуется детям от ${r.min_age} лет. Самым младшим можно уменьшить специи или выбрать другой вариант.</p>`}
     </div>
+    ${topPanel}
     <div class="cols">
       <section class="panel" aria-labelledby="hShop">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 id="hShop">Что купить</h2><button class="btn ghost small" id="copyList">Скопировать список</button></div>
@@ -417,11 +454,11 @@ function renderDetail(r){
       <section class="panel" aria-labelledby="hNut">
         <h2 id="hNut">Пищевая ценность порции</h2>
         <div class="tbl-wrap"><table><thead><tr><th>Кто</th><th>ккал</th><th>Белки, г</th><th>Жиры, г</th><th>Углев., г</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>
-        <p class="pct">% — доля дневной нормы ребёнка этого возраста.</p>
+        <p class="pct">% — доля дневной нормы ребёнка этого возраста. ${useTop?"С учётом добавки.":"Без добавки."}</p>
         <div class="label" style="margin-top:6px">Белок, минералы и витамин C · ребёнок ${a.label}</div>
         ${kidSw}
         <div class="bars">${bars}</div>
-        <div class="legend"><span><i style="background:var(--accent)"></i>доля дневной нормы в порции</span><span><i style="background:var(--saffron);width:3px"></i>ориентир на один приём пищи (${Math.round(share*100)}%)</span></div>
+        <div class="legend"><span><i style="background:var(--accent)"></i>доля дневной нормы в порции</span><span><i style="background:var(--peach-ink);width:3px"></i>ориентир на один приём пищи (${Math.round(share*100)}%)</span></div>
       </section>
     </div>
     <section class="panel" aria-labelledby="hSteps">
@@ -430,12 +467,12 @@ function renderDetail(r){
     </section>`;
 
   const d=$("#detail");
-  d.onchange = e => { if(e.target.type==="checkbox"){ checked[e.target.id]=e.target.checked; if(!e.target.checked) delete checked[e.target.id]; store.set("checked",checked); e.target.closest(".shop-item").classList.toggle("done",e.target.checked);} };
+  d.onchange = e => { if(e.target.id==="useTop"){ useTop=e.target.checked; store.set("useTop",useTop); renderDetail(r); return; } if(e.target.type==="checkbox"){ checked[e.target.id]=e.target.checked; if(!e.target.checked) delete checked[e.target.id]; store.set("checked",checked); e.target.closest(".shop-item").classList.toggle("done",e.target.checked);} };
   d.onclick = e => {
     const sb=e.target.closest(".sub-btn"); if(sb){ e.preventDefault(); const el=document.getElementById("sub-"+sb.dataset.sub); el.hidden=!el.hidden; sb.setAttribute("aria-expanded",String(!el.hidden)); return; }
     const kc=e.target.closest("#kidSw .chip"); if(kc){ focusKid=kc.dataset.v; renderDetail(r); return; }
     if(e.target.closest("#copyList")){
-      const txt = `${r.name}\n` + r.ings.filter(([k])=>!ING[k].pantry).map(([k,g])=>`☐ ${ING[k].name} — ${fmtQty(k,g)}`).join("\n");
+      const txt = `${r.name}\n` + [...r.ings, ...(useTop?r.topping.ings:[])].filter(([k])=>!ING[k].pantry).map(([k,g])=>`☐ ${ING[k].name} — ${fmtQty(k,g)}`).join("\n");
       const done=()=>{ e.target.textContent="Скопировано"; setTimeout(()=>e.target.textContent="Скопировать список",1800); };
       const fb=()=>{ $("#copyFallback").innerHTML=`<textarea class="copy-area" id="copyTxt" readonly>${esc(txt)}</textarea>`; const t=$("#copyTxt"); t.focus(); t.select(); };
       try{ navigator.clipboard.writeText(txt).then(done,fb); }catch(err){ fb(); }
