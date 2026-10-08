@@ -92,3 +92,26 @@ ing("kefir", "кефир 2,5%", D, 50, 2.9, 2.5, 4, 120, 0.1, 0.4, 14, 1, sub="�
 ing("sauerkraut", "капуста квашеная", V, 23, 1.8, 0.1, 3, 48, 0.6, 0.4, 16, 30, sub="свежая капуста с лимонным соком")
 ing("orange", "апельсины", FR, 43, 0.9, 0.2, 8.1, 34, 0.3, 0.2, 13, 60, sub="мандарины или киви")
 ing("ginger", "имбирь (кусочек)", P, 0, 0, 0, 0, 0, 0, 0, 0, 0, pantry=True)
+
+# ── для «тарелки»: новые продукты ──
+ing("salmon", "лосось / сёмга (филе)", F, 208, 20.4, 13.4, 0, 9, 0.3, 0.4, 27, 0, sub="форель или горбуша")
+ing("shrimp", "креветки очищенные", F, 85, 20, 0.5, 0, 70, 0.2, 1.3, 35, 0, sub="кальмар или белая рыба")
+ing("squid", "кальмар (тушка)", F, 98, 18, 2.2, 2, 32, 0.7, 1.5, 33, 4, sub="креветки")
+ing("mussels", "мидии (мясо)", F, 86, 12, 2.2, 3.7, 26, 4, 1.6, 34, 8, sub="креветки")
+ing("tofu", "тофу плотный", D, 144, 17, 9, 3, 350, 2.7, 1.6, 58, 0, sub="адыгейский сыр (не для веганов)")
+ing("quinoa", "киноа", G, 368, 14.1, 6.1, 64, 47, 4.6, 3.1, 197, 0, sub="булгур или гречка")
+ing("sweet_potato", "батат", V, 86, 1.6, 0.1, 20, 30, 0.6, 0.3, 25, 2.4, sub="картофель или тыква")
+ing("barley", "перловка", G, 352, 9.9, 1.2, 77.7, 29, 2.5, 2.1, 79, 0, sub="булгур")
+ing("olive_oil", "масло оливковое", P, 884, 0, 100, 0, 1, 0.6, 0, 0, 0, sub="рапсовое или подсолнечное масло")
+ing("rapeseed_oil", "масло рапсовое", P, 884, 0, 100, 0, 0, 0, 0, 0, 0, sub="оливковое масло")
+ing("beet", "свёкла", V, 43, 1.6, 0.2, 9.6, 16, 0.8, 0.35, 23, 4.9, sub="морковь")
+ing("cauliflower", "цветная капуста", V, 25, 1.9, 0.3, 5, 22, 0.4, 0.3, 15, 48, sub="брокколи")
+
+# Пищевые волокна, г на 100 г (ориентир по USDA / Скурихину)
+FIB = dict(buckwheat=10, rice=1.3, bulgur=12.5, wg_pasta=9, pasta=3, millet=8.5, oats=10, semolina=3.9, flour=2.7,
+  bread=7, red_lentils=10.8, chickpeas=12.2, potato=2.2, carrot=2.8, onion=1.7, garlic=2.1, tomato=1.2, passata=1.5,
+  tomato_paste=4, bell_pepper=2, zucchini=1, broccoli=2.6, cabbage=2.5, spinach=2.2, pumpkin=1, cucumber=0.5,
+  herbs=3, peas=5, mushrooms=1, apple=2.4, banana=2.6, berries=3, raisins=3.7, avocado=6.7, walnuts=6.7, lemon=2.8,
+  tortilla=7, beans=6, corn=2.4, soy_sauce=0.8, noodles=3, green_onion=2.6, sesame=11.8, pumpkin_seeds=6,
+  sauerkraut=2.9, orange=2.4, tofu=2.3, quinoa=7, sweet_potato=3, barley=15.6, beet=2.8, cauliflower=2, mussels=0)
+for k, v in I.items(): v["fib"] = FIB.get(k, 0)

@@ -75,7 +75,7 @@ header.top .brand p{max-width:56ch;color:#4D5B53}
 .edit:hover{background:var(--mint)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;font-size:.95rem;display:inline-flex;gap:8px;align-items:center}
-.chip:hover{border-color:var(--accent);background:var(--mint)}
+.chip[aria-pressed="false"]:hover{border-color:var(--accent);background:var(--mint)}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .chip .cnt{font-size:.75rem;opacity:.65}
 .chip:disabled{opacity:.4;cursor:not-allowed}
@@ -103,6 +103,44 @@ header.top .brand p{max-width:56ch;color:#4D5B53}
 .top-toggle{display:flex;gap:8px;align-items:center;font-size:.88rem;color:var(--muted);cursor:pointer;margin-top:4px}
 .top-toggle input{width:18px;height:18px;accent-color:var(--accent)}
 .top-group .label{color:var(--peach-ink)}
+
+/* Тарелка */
+.plate-wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px;align-items:start;background:var(--surface);border-radius:28px;padding:20px;box-shadow:var(--shadow)}
+@media (max-width:820px){.plate-wrap{grid-template-columns:1fr;padding:16px}}
+.plate-chart{display:grid;gap:10px;min-width:0}
+@media (min-width:821px){.plate-chart{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}}
+.plate-ctl{display:grid;gap:8px}
+.plate-ctl .chip{padding:6px 12px;font-size:.86rem}
+.chart-box{position:relative;width:100%;max-width:440px;justify-self:center}
+#plateSvg{display:block;width:100%;height:auto;aspect-ratio:1/1;max-width:100%}
+#plateSvg path{cursor:pointer}
+#plateSvg .qbg:hover{opacity:.8}
+.ring-l{font:500 11px var(--f-body);fill:var(--muted)}
+.ql-name{font:600 15px var(--f-body);fill:var(--fg)}
+.ql-val{font:800 22px var(--f-display);fill:var(--fg)}
+.ql-st{font:500 13px var(--f-body);fill:var(--muted)}
+.tip{position:absolute;transform:translate(-50%,-100%);background:var(--fg);color:#fff;font-size:.8rem;padding:6px 10px;border-radius:8px;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow)}
+.kcal-line{font-size:.84rem;color:var(--muted);text-align:center}
+.kcal-line b{color:var(--fg)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.plate-side{display:grid;gap:16px;min-width:0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}
+.tab{border:0;background:var(--sunk);border-radius:999px;padding:8px 14px;font-weight:600;font-size:.92rem;display:inline-flex;gap:8px;align-items:center}
+.tab i{width:10px;height:10px;border-radius:50%}
+.tab[aria-selected="true"]{background:var(--fg);color:#fff}
+.tab .cnt{font-size:.72rem;background:var(--surface);color:var(--fg);border-radius:999px;padding:0 6px}
+.prod-chips .chip[aria-pressed="true"]{background:var(--sel);border-color:var(--sel);color:#fff}
+.prod-chips .chip[aria-pressed="false"]:hover{background:var(--sunk);border-color:var(--sel)}
+.onplate{display:grid;gap:6px}
+.pi{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.pi i{width:10px;height:10px;border-radius:50%}
+.pi-n{font-weight:500}
+.pi-q{display:flex;align-items:center;gap:6px}
+.pi-q button,.pi-x{width:28px;height:28px;border-radius:50%;border:0;background:var(--sunk);line-height:1}
+.pi-q button:hover,.pi-x:hover{background:var(--mint)}
+.pi-g{min-width:5.2em;text-align:center;font-size:.88rem;font-weight:600}
+.micro{display:grid;gap:8px}
+.recs{display:grid;gap:12px}
 .tag-other{font-size:.74rem;color:var(--warn);font-weight:600}
 
 /* Рецепт */
@@ -147,16 +185,14 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:6px;max-width:75ch;pa
 .empty{color:var(--muted);font-size:.95rem}
 @media (prefers-reduced-motion:no-preference){
   .card,.chip{transition:border-color .15s,background .15s,box-shadow .15s}
-  .step.enter{animation:rise .28s ease-out}
-  @keyframes rise{from{transform:translateY(6px)}to{transform:none}}
-}
+  }
 </style>
 
 <div class="wrap">
   <header class="top">
     <div class="brand">
       <h1>Семейная тарелка</h1>
-      <p class="muted">Выберите, из чего готовить. Подберём простое домашнее блюдо, посчитаем БЖУ и минералы для ваших детей и составим список покупок.</p>
+      <p class="muted">Соберите тарелку из белка, гарнира, полезных жиров и овощей — и сразу увидите, насколько она закрывает норму ребёнка или взрослого. Потом подберём блюда и список покупок.</p>
     </div>
     <svg class="plate" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="44" fill="#FFFFFF"/><circle cx="48" cy="48" r="32" fill="none" stroke="#D3EBDD" stroke-width="3"/><circle cx="40" cy="42" r="10" fill="#3B9466" opacity=".85"/><circle cx="58" cy="44" r="8" fill="#F2995E"/><circle cx="50" cy="60" r="9" fill="#F5C84C"/></svg>
   </header>
@@ -168,6 +204,42 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:6px;max-width:75ch;pa
   </section>
 
   <main id="main" class="picker">
+    <section class="plate-wrap" aria-labelledby="plateTitle">
+      <div class="plate-chart">
+        <div class="plate-ctl">
+          <div class="chips" id="personChips" role="group" aria-label="Для кого считаем"></div>
+          <div class="chips" id="plateMeal" role="group" aria-label="Приём пищи"></div>
+        </div>
+        <div class="chart-box">
+          <svg id="plateSvg" viewBox="0 0 440 440" role="img" aria-labelledby="plateTitle plateDesc"></svg>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+        <p class="sr" id="plateDesc"></p>
+        <div class="kcal-line" id="kcalLine"></div>
+      </div>
+      <div class="plate-side">
+        <div>
+          <h2 id="plateTitle">Соберите тарелку</h2>
+          <p class="muted" style="font-size:.92rem;margin-top:4px">Выберите продукты в каждой секции. Круг заполняется от центра (0) к краю — это 100% нормы на выбранный приём пищи.</p>
+        </div>
+        <div class="tabs" id="tabs" role="tablist" aria-label="Секции тарелки"></div>
+        <div class="chips prod-chips" id="prodChips" role="group"></div>
+        <div class="onplate">
+          <div class="label">На тарелке · порция для <span id="whoLabel"></span></div>
+          <div id="plateItems"></div>
+        </div>
+        <div class="micro">
+          <div class="label">Минералы и витамин C от нормы на приём пищи</div>
+          <div class="bars" id="microBars"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="recs" aria-labelledby="recTitle">
+      <div class="picker-title"><h2 id="recTitle">Блюда с этими продуктами</h2><span class="muted" id="recHint" style="font-size:.9rem"></span></div>
+      <div class="results" id="results"></div>
+    </section>
+
     <section class="surprise" aria-labelledby="sTitle">
       <div>
         <h2 id="sTitle">Не знаю, что приготовить</h2>
@@ -176,30 +248,6 @@ footer{font-size:.8rem;color:var(--muted);display:grid;gap:6px;max-width:75ch;pa
       </div>
       <button class="btn warm" id="surpriseBtn">Предложить вариант</button>
       <div class="surprise-result" id="surpriseResult"></div>
-    </section>
-
-    <div class="picker-title"><h2>Подобрать блюдо</h2><span class="muted" style="font-size:.9rem">3 коротких вопроса</span></div>
-
-    <section class="step" id="step1" aria-labelledby="st1">
-      <div class="step-head"><span class="step-no">1</span><h2 id="st1">Из чего готовим? <span class="step-val" id="v1"></span></h2><button class="edit" data-step="1" hidden>Изменить</button></div>
-      <div class="chips big-chips" id="proteinChips" role="group" aria-label="Основной продукт"></div>
-    </section>
-
-    <section class="step" id="step2" hidden aria-labelledby="st2">
-      <div class="step-head"><span class="step-no">2</span><h2 id="st2">С соусом или без? <span class="step-val" id="v2"></span></h2><button class="edit" data-step="2" hidden>Изменить</button></div>
-      <div class="chips big-chips" id="sauceYN" role="group"></div>
-    </section>
-
-    <section class="step" id="step3" hidden aria-labelledby="st3">
-      <div class="step-head"><span class="step-no">3</span><h2 id="st3">Какой соус? <span class="step-val" id="v3"></span></h2><button class="edit" data-step="3" hidden>Изменить</button></div>
-      <div class="chips big-chips" id="sauceChips" role="group"></div>
-    </section>
-
-    <section class="step" id="stepRes" hidden aria-labelledby="st4">
-      <div class="step-head"><span class="step-no" id="resNo">4</span><h2 id="st4">Что можно приготовить</h2></div>
-      <div class="chips" id="cuisineChips" role="group" aria-label="Кухня"></div>
-      <p class="muted" id="resHint" style="font-size:.9rem"></p>
-      <div class="results" id="results"></div>
     </section>
   </main>
 
@@ -220,16 +268,16 @@ const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(
 const SAUCES = [["tomato","Томатный"],["cream","Сливочный"],["sourcream","Сметанный"],["spicy","Пряный, мягкий"],["asian","Азиатский соево-медовый"]];
 const CUISINES = {home:"Домашняя",italian:"Итальянская",mexican:"Мексиканская",asian:"Азиатская"};
 let useTop = store.get("useTop", true);
-const NK=["kcal","p","f","c","ca","fe","zn","mg","vc"];
+const NK=["kcal","p","f","c","fib","ca","fe","zn","mg","vc"];
 function N(r){ if(!useTop) return r.per; const o={}; for(const k of NK) o[k]=r.per[k]+r.topping.per[k]; return o; }
 const MEALS = {breakfast:"Завтрак",lunch:"Обед",dinner:"Ужин"};
 const MEAL_SHARE = {breakfast:.25,lunch:.35,dinner:.25};
 const AGES = [
-  {k:"a1",label:"1–2 года",f:.4, n:{kcal:1300,p:39,f:44,c:188,ca:800,fe:10,zn:5,mg:80,vc:30}},
-  {k:"a3",label:"3–6 лет",f:.55,n:{kcal:1800,p:54,f:60,c:261,ca:900,fe:10,zn:8,mg:200,vc:50}},
-  {k:"a7",label:"7–10 лет",f:.75,n:{kcal:2100,p:63,f:70,c:305,ca:1100,fe:12,zn:10,mg:250,vc:60}},
-  {k:"a11",label:"11–14 лет",f:.9,n:{kcal:2400,p:72,f:80,c:349,ca:1200,fe:13.5,zn:12,mg:300,vc:65}},
-  {k:"a15",label:"15–17 лет",f:1,n:{kcal:2700,p:81,f:90,c:392,ca:1200,fe:16.5,zn:12,mg:350,vc:80}},
+  {k:"a1",label:"1–2 года",f:.4, n:{kcal:1300,p:39,f:44,c:188,ca:800,fe:10,zn:5,mg:80,vc:30,fib:10}},
+  {k:"a3",label:"3–6 лет",f:.55,n:{kcal:1800,p:54,f:60,c:261,ca:900,fe:10,zn:8,mg:200,vc:50,fib:15}},
+  {k:"a7",label:"7–10 лет",f:.75,n:{kcal:2100,p:63,f:70,c:305,ca:1100,fe:12,zn:10,mg:250,vc:60,fib:18}},
+  {k:"a11",label:"11–14 лет",f:.9,n:{kcal:2400,p:72,f:80,c:349,ca:1200,fe:13.5,zn:12,mg:300,vc:65,fib:20}},
+  {k:"a15",label:"15–17 лет",f:1,n:{kcal:2700,p:81,f:90,c:392,ca:1200,fe:16.5,zn:12,mg:350,vc:80,fib:22}},
 ];
 const AGE_MIN = {a1:1,a3:3,a7:7,a11:11,a15:15};
 const MINERALS = [["p","Белок"],["ca","Кальций"],["fe","Железо"],["zn","Цинк"],["mg","Магний"],["vc","Витамин C"]];
@@ -299,74 +347,6 @@ function card(r, extra=""){
   </a>`;
 }
 
-/* ---------- подбор ---------- */
-const state = {protein:null, withSauce:null, sauce:null, active:1, cuisine:"all"};
-function chip(label, val, pressed, cnt, dis){
-  return `<button class="chip" data-v="${val}" aria-pressed="${pressed}" ${dis?"disabled":""}>${label}${cnt!=null?`<span class="cnt">${cnt}</span>`:""}</button>`;
-}
-const sauceName = k => SAUCES.find(s=>s[0]===k)[1];
-function setStep(sec, {show, done, val}){
-  const el=$(sec); const wasHidden = el.hidden;
-  el.hidden = !show; if(!show) return;
-  el.classList.toggle("done", !!done);
-  el.querySelector(".chips").hidden = !!done;
-  el.querySelector(".edit").hidden = !done;
-  el.querySelector(".step-val").textContent = done ? "— " + val : "";
-  if(wasHidden){ el.classList.remove("enter"); void el.offsetWidth; el.classList.add("enter"); }
-}
-function renderPicker(){
-  const A = state.active;
-  const pr = state.protein ? RECIPES.filter(r=>r.protein===state.protein) : [];
-  $("#proteinChips").innerHTML = PROTEINS.map(([k,l]) => chip(l,k,state.protein===k,RECIPES.filter(r=>r.protein===k).length)).join("");
-  setStep("#step1",{show:true, done:A>1, val:state.protein&&PROTEINS.find(p=>p[0]===state.protein)[1]});
-  if(state.protein){
-    const nNone = pr.filter(r=>r.sauce==="none").length;
-    $("#sauceYN").innerHTML = chip("Без соуса","no",state.withSauce===false,nNone) + chip("С соусом","yes",state.withSauce===true,pr.length-nNone);
-  }
-  setStep("#step2",{show:A>=2, done:A>2, val:state.withSauce?"с соусом":"без соуса"});
-  if(state.withSauce) $("#sauceChips").innerHTML = SAUCES.map(([k,l])=>chip(l,k,state.sauce===k,pr.filter(r=>r.sauce===k).length)).join("");
-  setStep("#step3",{show:A>=3 && state.withSauce===true, done:A>3, val:state.sauce&&sauceName(state.sauce).toLowerCase()});
-  const sr=$("#stepRes"), wasHidden=sr.hidden;
-  sr.hidden = A!==4;
-  $("#resNo").textContent = state.withSauce ? "4" : "3";
-  if(A===4){ renderResults(); if(wasHidden){ sr.classList.remove("enter"); void sr.offsetWidth; sr.classList.add("enter"); } }
-}
-function renderResults(){
-  const all = RECIPES.filter(r=>r.protein===state.protein);
-  const cs = [...new Set(all.map(r=>r.cuisine))];
-  if(!cs.includes(state.cuisine)) state.cuisine="all";
-  $("#cuisineChips").innerHTML = cs.length>1 ? chip("Любая кухня","all",state.cuisine==="all") + Object.keys(CUISINES).filter(c=>cs.includes(c)).map(c=>chip(CUISINES[c],c,state.cuisine===c,all.filter(r=>r.cuisine===c).length)).join("") : "";
-  $("#cuisineChips").hidden = cs.length<2;
-  const pr = state.cuisine==="all" ? all : all.filter(r=>r.cuisine===state.cuisine);
-  const want = state.withSauce ? state.sauce : "none";
-  let exact = pr.filter(r=>r.sauce===want);
-  exact.sort((a,b)=>ageOk(b)-ageOk(a));
-  let list = exact.slice(0,5).map(r=>card(r));
-  if(exact.length<5){
-    const other = pr.filter(r=>r.sauce!==want).slice(0,5-exact.length);
-    list = list.concat(other.map(r=>card(r,`<span class="tag-other">${r.sauce==="none"?"Без соуса":"Соус: "+sauceName(r.sauce).toLowerCase()}</span>`)));
-  }
-  $("#resHint").textContent = exact.length
-    ? `Нашли ${exact.length} ${PLURAL_RECIPE(exact.length)}${exact.length<5?", и добавили похожие с другим соусом":""}. Значки показывают пользу для ребёнка ${refAge().label}.`
-    : `Точных совпадений пока нет. Вот блюда из той же основы.`;
-  $("#results").innerHTML = list.join("") || `<p class="empty">Здесь пока пусто.</p>`;
-}
-const scrollOpts = () => ({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"});
-document.querySelector(".picker").addEventListener("click", e => {
-  const ed = e.target.closest(".edit");
-  if(ed){ state.active = +ed.dataset.step; renderPicker(); return; }
-  const b = e.target.closest(".chip"); if(!b || b.disabled) return;
-  const grp = b.parentElement.id, v=b.dataset.v;
-  if(grp==="cuisineChips"){ state.cuisine=v; renderResults(); return; }
-  if(grp==="proteinChips"){ state.protein=v; state.withSauce=null; state.sauce=null; state.cuisine="all"; state.active=2; }
-  else if(grp==="sauceYN"){ state.withSauce = v==="yes"; state.sauce=null; state.active = state.withSauce?3:4; }
-  else if(grp==="sauceChips"){ state.sauce=v; state.active=4; }
-  else return;
-  renderPicker();
-  const target = {2:"#step2",3:"#step3",4:"#stepRes"}[state.active];
-  requestAnimationFrame(()=>{ const el=$(target); if(el && !el.hidden) el.scrollIntoView(scrollOpts()); });
-});
-
 /* ---------- рандомайзер ---------- */
 function mealByTime(d=new Date()){ const h=d.getHours(); return h>=5&&h<11?"breakfast":h>=11&&h<16?"lunch":h>=16&&h<23?"dinner":"breakfast"; }
 let surpriseMeal = mealByTime(), recent = [], lastSurprise=null;
@@ -386,6 +366,175 @@ function doSurprise(){
 }
 $("#surpriseBtn").addEventListener("click", doSurprise);
 $("#mealChips").addEventListener("click", e=>{ const b=e.target.closest(".chip"); if(!b) return; surpriseMeal=b.dataset.v; renderMealChips(); doSurprise(); });
+
+/* ---------- тарелка ---------- */
+function chip(label, val, pressed, cnt, dis){
+  return `<button class="chip" data-v="${val}" aria-pressed="${pressed}" ${dis?"disabled":""}>${label}${cnt!=null?`<span class="cnt">${cnt}</span>`:""}</button>`;
+}
+const PLATE = DB.plate;
+const SECT = [
+  {k:"p",  n:"p",   label:"Белки",     tab:"Белки",     color:"#C9473A", tint:"#F7E3E0", a0:0},
+  {k:"c",  n:"c",   label:"Углеводы",  tab:"Углеводы",  color:"#B98410", tint:"#F6ECD6", a0:90},
+  {k:"fib",n:"fib", label:"Клетчатка", tab:"Клетчатка", color:"#25896A", tint:"#DDF0E9", a0:180},
+  {k:"f",  n:"f",   label:"Жиры",      tab:"Жиры",      color:"#6F5FD0", tint:"#E8E5F8", a0:270},
+];
+const SECT_ORDER = ["p","c","f","fib"];
+const ADULT = {k:"adult",label:"взрослого",f:1,n:{kcal:2300,p:80,f:77,c:320,fib:22,ca:1000,fe:14,zn:12,mg:420,vc:100}};
+const DRY = new Set(["buckwheat","rice","bulgur","quinoa","wg_pasta","noodles","barley","millet","oats","chickpeas","red_lentils"]);
+const prod = (sec,key) => PLATE[sec].find(x=>x[0]===key);
+let plate = store.get("plate", null) || {items:[{s:"p",k:"salmon",m:1},{s:"c",k:"buckwheat",m:1},{s:"f",k:"olive_oil",m:1},{s:"fib",k:"broccoli",m:1}], tab:"p", person:null, meal:null};
+if(!plate.meal) plate.meal = mealByTime();
+function person(){
+  if(plate.person==="adult") return ADULT;
+  const a = AGES.find(x=>x.k===plate.person && family[x.k]>0);
+  return a || kidsList()[0] || ADULT;
+}
+const gramsFor = (it, p) => prod(it.s,it.k)[2]*it.m*p.f;
+function plateCalc(){
+  const p = person(), share = MEAL_SHARE[plate.meal];
+  const per = it => { const g=gramsFor(it,p), I=ING[it.k], o={g}; for(const n of ["kcal","p","f","c","fib","ca","fe","zn","mg","vc"]) o[n]=I[n]*g/100; return o; };
+  const rows = plate.items.map(it=>({it, v:per(it)}));
+  const tot = {}; for(const n of ["kcal","p","f","c","fib","ca","fe","zn","mg","vc"]) tot[n]=rows.reduce((s,r)=>s+r.v[n],0);
+  const target = n => p.n[n]*share;
+  return {p, share, rows, tot, target, pct:n=>tot[n]/target(n)*100};
+}
+/* --- SVG --- */
+const CX=220, CY=220, R=140, MAXP=120, GAP=2.2;
+const pol = (r,deg) => { const a=(deg-90)*Math.PI/180; return [CX+r*Math.cos(a), CY+r*Math.sin(a)]; };
+function sector(r0,r1,a0,a1){
+  if(r1-r0<0.3) return "";
+  const [x0,y0]=pol(r1,a0),[x1,y1]=pol(r1,a1),[x2,y2]=pol(r0,a1),[x3,y3]=pol(r0,a0);
+  return r0<0.5 ? `M${CX},${CY} L${x0},${y0} A${r1},${r1} 0 0 1 ${x1},${y1} Z`
+    : `M${x0},${y0} A${r1},${r1} 0 0 1 ${x1},${y1} L${x2},${y2} A${r0},${r0} 0 0 0 ${x3},${y3} Z`;
+}
+const status = v => v<50?"мало":v<85?"почти":v<=120?"в норме":"много";
+let shown = {}; let anim = null;
+function drawPlate(){
+  const C = plateCalc();
+  const bands = [];
+  for(const q of SECT){
+    let cum = 0;
+    const its = [...C.rows].sort((a,b)=>SECT_ORDER.indexOf(a.it.s)-SECT_ORDER.indexOf(b.it.s));
+    const sameCount = {};
+    for(const {it,v} of its){
+      const pc = v[q.n]/C.target(q.n)*100; if(pc<0.4) continue;
+      const sc = SECT.find(s=>s.k===it.s);
+      sameCount[it.s]=(sameCount[it.s]||0)+1;
+      bands.push({id:q.k+"|"+it.k, q, it, from:cum, to:cum+pc, color:sc.color, op: sameCount[it.s]%2?1:.68, grams:v[q.n], name:prod(it.s,it.k)[1]});
+      cum += pc;
+    }
+  }
+  const target = {}; bands.forEach(b=>target[b.id]=[b.from,b.to]);
+  const start = {}; bands.forEach(b=>{ start[b.id] = shown[b.id] || [b.from,b.from]; });
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const t0 = performance.now(), dur = reduce?0:380;
+  cancelAnimationFrame(anim);
+  const frame = now => {
+    const k = dur ? Math.min(1,(now-t0)/dur) : 1, e = 1-Math.pow(1-k,3);
+    const cur = {};
+    for(const b of bands){ const s=start[b.id], t=target[b.id]; cur[b.id]=[s[0]+(t[0]-s[0])*e, s[1]+(t[1]-s[1])*e]; }
+    render(C, bands, cur);
+    if(k<1) anim=requestAnimationFrame(frame); else shown=cur;
+  };
+  anim = requestAnimationFrame(frame);
+  // текстовое описание
+  $("#plateDesc").textContent = SECT.map(q=>`${q.label}: ${Math.round(C.pct(q.n))}% нормы`).join(", ");
+  $("#kcalLine").innerHTML = `<b>${Math.round(C.tot.kcal)} ккал</b> из ${Math.round(C.target("kcal"))} на ${MEALS[plate.meal].toLowerCase()} · ` +
+    SECT.map(q=>`${q.label.toLowerCase()} ${fmtG(C.tot[q.n])} / ${fmtG(C.target(q.n))}`).join(" · ");
+}
+const fmtG = v => `${v<10?v.toFixed(1).replace(".",","):Math.round(v)} г`;
+function render(C, bands, cur){
+  const rr = v => R*Math.min(v,MAXP)/100;
+  let s = "";
+  for(const q of SECT){
+    s += `<path d="${sector(0,R,q.a0+GAP,q.a0+90-GAP)}" fill="${q.tint}" data-q="${q.k}" class="qbg"/>`;
+  }
+  for(const b of bands){
+    const [f,t]=cur[b.id];
+    s += `<path d="${sector(rr(f),rr(t),b.q.a0+GAP,b.q.a0+90-GAP)}" fill="${b.color}" fill-opacity="${b.op}" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" data-q="${b.q.k}" data-tip="${esc(b.name)}: ${fmtG(b.grams)} ${b.q.label.toLowerCase()} · +${Math.round(b.to-b.from)}%"/>`;
+  }
+  s += `<circle cx="${CX}" cy="${CY}" r="${R*.5}" fill="none" stroke="#26332C" stroke-opacity=".14" stroke-dasharray="3 5"/>`;
+  s += `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#26332C" stroke-opacity=".38" stroke-width="1.5" stroke-dasharray="5 5"/>`;
+  s += `<text x="${CX+4}" y="${CY-R*.5-4}" class="ring-l">50%</text><text x="${CX+4}" y="${CY-R-5}" class="ring-l">100%</text>`;
+  s += `<circle cx="${CX}" cy="${CY}" r="4" fill="#26332C" fill-opacity=".5"/>`;
+  const pos = {p:[426,30,"end"], c:[426,400,"end"], fib:[14,400,"start"], f:[14,30,"start"]};
+  for(const q of SECT){
+    const v = C.pct(q.n), [x,y,an] = pos[q.k];
+    s += `<g class="qlabel" data-q="${q.k}"><text x="${x}" y="${y}" text-anchor="${an}" class="ql-name"><tspan fill="${q.color}">●</tspan> ${q.label}</text>
+      <text x="${x}" y="${y+24}" text-anchor="${an}" class="ql-val">${Math.round(v)}%<tspan class="ql-st" dx="6">${status(v)}</tspan></text></g>`;
+  }
+  $("#plateSvg").innerHTML = s;
+}
+const svg = $("#plateSvg"), tip = $("#tip");
+svg.addEventListener("pointermove", e=>{
+  const t = e.target.closest("[data-tip]");
+  if(!t){ tip.hidden=true; return; }
+  const box = svg.parentElement.getBoundingClientRect();
+  tip.textContent = t.dataset.tip; tip.hidden=false;
+  const x = e.clientX-box.left, y = e.clientY-box.top;
+  tip.style.left = Math.min(Math.max(x,90), box.width-90)+"px"; tip.style.top = (y-14)+"px";
+});
+svg.addEventListener("pointerleave", ()=> tip.hidden=true);
+svg.addEventListener("click", e=>{ const q=e.target.closest("[data-q]"); if(q){ plate.tab=q.dataset.q; save(); renderSide(); } });
+
+/* --- панель выбора --- */
+function save(){ store.set("plate", plate); }
+function renderSide(){
+  const p = person();
+  const opts = [...(family.adults?[["adult","Взрослый"]]:[]), ...kidsList().map(a=>[a.k,"Ребёнок "+a.label])];
+  $("#personChips").innerHTML = opts.map(([k,l])=>chip(l,k,p.k===k)).join("");
+  $("#plateMeal").innerHTML = Object.entries(MEALS).map(([k,l])=>chip(l,k,plate.meal===k)).join("");
+  $("#whoLabel").textContent = p===ADULT ? "взрослого" : "ребёнка " + p.label;
+  $("#tabs").innerHTML = SECT.map(q=>{ const n=plate.items.filter(i=>i.s===q.k).length;
+    return `<button role="tab" class="tab" data-t="${q.k}" aria-selected="${plate.tab===q.k}"><i style="background:${q.color}"></i>${q.tab}${n?`<span class="cnt">${n}</span>`:""}</button>`; }).join("");
+  const sec = SECT.find(q=>q.k===plate.tab);
+  $("#prodChips").setAttribute("aria-label", sec.label);
+  $("#prodChips").style.setProperty("--sel", sec.color);
+  $("#prodChips").innerHTML = PLATE[plate.tab].map(([k,l])=>chip(l,k,plate.items.some(i=>i.s===plate.tab&&i.k===k))).join("");
+  const sorted = [...plate.items].sort((a,b)=>SECT_ORDER.indexOf(a.s)-SECT_ORDER.indexOf(b.s));
+  $("#plateItems").innerHTML = sorted.length ? sorted.map(it=>{
+    const pr = prod(it.s,it.k), q=SECT.find(x=>x.k===it.s), g=gramsFor(it,p);
+    const gtxt = it.k==="egg" ? `${Math.max(.5,Math.round(g/55*2)/2).toString().replace(".",",")} шт` : `${Math.round(g/5)*5||g.toFixed(0)} г${DRY.has(it.k)?" сух.":""}`;
+    return `<div class="pi"><i style="background:${q.color}"></i><span class="pi-n">${esc(pr[1])}</span>
+      <span class="pi-q"><button data-act="dec" data-k="${it.s}|${it.k}" aria-label="Меньше: ${esc(pr[1])}">−</button><span class="pi-g">${gtxt}</span><button data-act="inc" data-k="${it.s}|${it.k}" aria-label="Больше: ${esc(pr[1])}">+</button></span>
+      <button class="pi-x" data-act="del" data-k="${it.s}|${it.k}" aria-label="Убрать: ${esc(pr[1])}">×</button></div>`;
+  }).join("") : `<p class="empty">Тарелка пустая. Выберите продукт в любой секции.</p>`;
+  const C = plateCalc();
+  $("#microBars").innerHTML = [["ca","Кальций"],["fe","Железо"],["zn","Цинк"],["mg","Магний"],["vc","Витамин C"]].map(([n,l])=>{
+    const v=C.pct(n);
+    return `<div class="bar"><span>${l}</span><div class="track"><div class="fill" style="width:${Math.min(v,100)}%"></div></div><span class="v">${Math.round(v)}%</span></div>`;
+  }).join("");
+  drawPlate(); renderRecs();
+}
+$(".plate-wrap").addEventListener("click", e=>{
+  const tab = e.target.closest(".tab"); if(tab){ plate.tab=tab.dataset.t; save(); renderSide(); return; }
+  const ch = e.target.closest(".chip");
+  if(ch && ch.parentElement.id==="prodChips"){
+    const k=ch.dataset.v, i=plate.items.findIndex(x=>x.s===plate.tab&&x.k===k);
+    if(i>=0) plate.items.splice(i,1); else plate.items.push({s:plate.tab,k,m:1});
+    save(); renderSide(); return;
+  }
+  if(ch && ch.parentElement.id==="personChips"){ plate.person=ch.dataset.v; save(); renderSide(); return; }
+  if(ch && ch.parentElement.id==="plateMeal"){ plate.meal=ch.dataset.v; save(); renderSide(); return; }
+  const a = e.target.closest("[data-act]"); if(!a) return;
+  const [s,k]=a.dataset.k.split("|"), i=plate.items.findIndex(x=>x.s===s&&x.k===k); if(i<0) return;
+  if(a.dataset.act==="del") plate.items.splice(i,1);
+  else plate.items[i].m = Math.max(.5, Math.min(3, plate.items[i].m + (a.dataset.act==="inc"?.5:-.5)));
+  save(); renderSide();
+});
+
+/* --- рецепты по продуктам тарелки --- */
+function renderRecs(){
+  const sel = plate.items.map(it=>({s:it.s, al:new Set(prod(it.s,it.k)[3])}));
+  const scored = RECIPES.map(r=>{
+    const keys = new Set(r.ings.map(x=>x[0]));
+    let sc = 0; for(const x of sel) if([...x.al].some(k=>keys.has(k))) sc += x.s==="p"?3:x.s==="c"?2:1;
+    if(r.meals.includes(plate.meal)) sc += .5;
+    return [r,sc];
+  }).filter(([r,sc])=>sc>=1).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  $("#recHint").textContent = scored.length ? "Сначала — где совпало больше продуктов" : "";
+  $("#results").innerHTML = scored.length ? scored.map(([r])=>card(r)).join("") : `<p class="empty">В базе пока нет блюд с этими продуктами. Попробуйте другой белок или гарнир.</p>`;
+}
 
 /* ---------- рецепт ---------- */
 let checked = store.get("checked", {});
@@ -437,7 +586,7 @@ function renderDetail(r){
 
   $("#detail").innerHTML = `
     <div class="detail-head">
-      <a class="btn ghost small back" href="#">← К подбору</a>
+      <a class="btn ghost small back" href="#">← К тарелке</a>
       <div class="label">${r.meals.map(m=>MEALS[m]).join(" · ")} · ${r.time} мин · от ${r.min_age} ${r.min_age===1?"года":"лет"}</div>
       <h1 style="font-size:clamp(1.3rem,3.6vw,1.8rem)">${esc(r.name)}</h1>
       <p class="muted">Гарнир: ${esc(r.garnish)}. Количество продуктов рассчитано на ${portions().toFixed(1).replace(".",",")} взрослых порции.</p>
@@ -488,11 +637,11 @@ function route(){
   if(r){ renderDetail(r); window.scrollTo(0,0); }
 }
 function rerenderAll(){
-  renderPicker(); renderMealChips();
+  renderSide(); renderMealChips();
   if(lastSurprise){ const r=RECIPES.find(x=>x.id===lastSurprise); $("#surpriseResult").innerHTML=`<div class="results" style="grid-template-columns:1fr">${card(r)}</div>`; }
   route();
 }
 window.addEventListener("hashchange", route);
 renderFamily(); renderMealChips(); doSurprise();
-renderPicker(); route();
+renderSide(); route();
 </script>
